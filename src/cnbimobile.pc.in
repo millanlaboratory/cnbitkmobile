@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libcnbimobile
+Description: CNBI Protocol for mobile devices
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lcnbimobile
+Cflags: -I${includedir}/cnbimobile
