@@ -4,7 +4,7 @@ m4_define([lib_age],2)
 
 AC_INIT(cnbimobile,[lib_current.lib_revision.lib_age],
 		luca.tonin@epfl.ch)
-AC_CONFIG_SRCDIR([src/CmControl.hpp])
+AC_CONFIG_SRCDIR([src/CmEngine.hpp])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config/config.h])
@@ -18,7 +18,7 @@ AC_CANONICAL_BUILD
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11
-
+CFLAGS+=" -std=c11"
 LT_INIT([win32-dll disable-static])
 AC_SUBST(LIBTOOL_DEPS)
 
@@ -57,6 +57,6 @@ AC_SUBST([REVISION],[lib_revision])
 AC_SUBST([AGE],[lib_age])
 AC_SUBST(AM_LDFLAGS)
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/cnbimobile.pc])
 
 AC_OUTPUT
