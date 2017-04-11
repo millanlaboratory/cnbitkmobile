@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 	circle = dtk_create_circle(NULL, 0.0f, 0.0f, 0.1f, 1, dtk_white, 100);
 
 	engine.Start();
-	engine.Add("circle", circle);
+	engine.AddShape("circle", circle);
 
 	CcTimeValue tic;
 

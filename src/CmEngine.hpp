@@ -14,21 +14,23 @@ class CmEngine : public CcThread {
 		CmEngine(void);
 		~CmEngine(void);
 
-		void SetCaption(std::string caption);
-		void SetSize(unsigned int w, unsigned int h);
-		void SetPosition(unsigned int x, unsigned int y);
-		void SetBits(unsigned int bpp);
+		void SetCaption(const std::string caption);
+		void SetSize(const unsigned int w, const unsigned int h);
+		void SetPosition(const unsigned int x, const unsigned int y);
+		void SetBits(const unsigned int bpp);
 
-		void Add(std::string name, dtk_hshape shp, bool overwrite = true);
-		void Remove(std::string name);
-		bool Exists(std::string name);
+		void AddShape(const std::string name, dtk_hshape shp, bool overwrite = true);
+		bool RemoveShape(const std::string name);
+		dtk_hshape GetShape(const std::string name);
+		bool Exists(const std::string name);
 
-		bool Move(float input);
-		bool Reset(void);
+		bool HideShape(const std::string name);
+		bool ShowShape(const std::string name);
 
 	protected:
 		void Main(void);
 		void Render(void);
+		void Destroy(void);
 
 	private:
 		dtk_hwnd		win_ptr_;
@@ -43,6 +45,8 @@ class CmEngine : public CcThread {
 		CcSemaphore		shp_sem_;
 
 		std::map<std::string, dtk_hshape> 	shapes_;
+
+		float 			colormask_[4];
 		
 };
 
