@@ -1,4 +1,4 @@
-#include "CmControl.hpp"
+#include "CmFeedback.hpp"
 #include <cnbicore/CcTime.hpp>
 
 float sinewave(float a, float dt, float f) {
@@ -8,25 +8,25 @@ float sinewave(float a, float dt, float f) {
 int main(int argc, char** argv) {
 
 	float angle;
-	cnbi::mobile::CmControl control;
+	cnbi::mobile::CmFeedback feedback;
 
-	control.Start();
+	feedback.Start();
 
 	printf("[test_control] - Reset angle\n");
-	control.Reset();
+	feedback.Reset();
 	CcTime::Sleep(500);
 
 	printf("[test_control] - Hide fixation\n");
-	control.Hide(cnbi::mobile::CmControl::Fixation);
+	feedback.Hide(cnbi::mobile::CmFeedback::Fixation);
 	CcTime::Sleep(500);
 	
 	printf("[test_control] - Hide slice\n");
-	control.Hide(cnbi::mobile::CmControl::Slice);
+	feedback.Hide(cnbi::mobile::CmFeedback::Slice);
 	CcTime::Sleep(500);
 	
 	printf("[test_control] - Show fixation and slice\n");
-	control.Show(cnbi::mobile::CmControl::Fixation);
-	control.Show(cnbi::mobile::CmControl::Slice);
+	feedback.Show(cnbi::mobile::CmFeedback::Fixation);
+	feedback.Show(cnbi::mobile::CmFeedback::Slice);
 	CcTime::Sleep(500);
 
 	CcTimeValue start;
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 	while(true) {
 
 		angle = sinewave(M_PI/2.0f, CcTime::Toc(&start)/1000.0f, 0.2f);
-		control.Update(angle);
+		feedback.Update(angle);
 
 		if(CcTime::Toc(&start) > 6790)
 			break;
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 	}
 
 	printf("[test_control] - Reset angle\n");
-	control.Reset();
+	feedback.Reset();
 	CcTime::Sleep(500);
 	
 

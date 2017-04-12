@@ -123,6 +123,18 @@ bool CmEngine::ShowShape(const std::string name) {
 	return true;
 }
 
+bool CmEngine::SetColor(const std::string name, const float* color) {
+
+	bool res = false;
+	if(this->Exists(name) == false) {
+		return false;
+	}
+
+	dtk_setcolor_shape(this->GetShape(name), color, 0);
+	
+	return true;
+}
+
 void CmEngine::Main(void) {
 	if(!CcThread::IsRunning()) {
 		return;

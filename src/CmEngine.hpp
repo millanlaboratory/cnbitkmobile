@@ -26,6 +26,7 @@ class CmEngine : public CcThread {
 
 		bool HideShape(const std::string name);
 		bool ShowShape(const std::string name);
+		bool SetColor(const std::string name, const float* color);
 
 	protected:
 		void Main(void);

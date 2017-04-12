@@ -1,54 +1,67 @@
-#ifndef CNBITK_MOBILE_CONTROL_CPP
-#define CNBITK_MOBILE_CONTROL_CPP
+#ifndef CNBITK_MOBILE_FEEDBACK_CPP
+#define CNBITK_MOBILE_FEEDBACK_CPP
 
-#include "CmControl.hpp"
+#include "CmFeedback.hpp"
 
 namespace cnbi {
 	namespace mobile {
 
-CmControl::CmControl(float radius, float arc, float thick) {
+CmFeedback::CmFeedback(float radius, float arc, float thick) {
+
+	this->color_left_  = dtk_skyblue_dark;
+	this->color_right_ = dtk_scarletred_dark;
+	this->color_slice_ = dtk_aluminium_dark;
+	this->color_index_ = dtk_chameleon_dark;
 
 	dtk_hshape outer = dtk_create_circle(NULL, 0.0f, 0.0f, radius, 1, dtk_aluminium2_med, 100);
-	dtk_hshape slice = this->create_slice(NULL, 0.0f, 0.0f, radius, arc, dtk_aluminium_dark);
+	dtk_hshape slice = this->create_slice(NULL, 0.0f, 0.0f, radius, arc, this->color_slice_);
+	dtk_hshape index = dtk_create_rectangle_2p(NULL, -0.005, 0.0f, 0.005, radius, 1, this->color_index_);
 	dtk_hshape inner = dtk_create_circle(NULL, 0.0f, 0.0f, radius - thick, 1, dtk_black, 100);
 	dtk_hshape limit = this->create_limits(NULL, radius, 0.01);
 	dtk_hshape fix   = this->create_fixation(NULL, 0.0f, 0.0f, 0.2f, 0.03f, dtk_aluminium_dark);
 
 	this->AddShape("0_outer", outer);
 	this->AddShape("1_slice", slice);
-	this->AddShape("2_limit", limit);
-	this->AddShape("3_inner", inner);
-	this->AddShape("4_fix", fix);
+	this->AddShape("2_index", index);
+	this->AddShape("3_limit", limit);
+	this->AddShape("4_inner", inner);
+	this->AddShape("5_fix", fix);
 
 }
 
-CmControl::~CmControl(void) {
+CmFeedback::~CmFeedback(void) {
 	
 	delete[] this->indices_;
 	delete[] this->vertices_;
 	delete[] this->colors_;
 }
 
-void CmControl::Reset(void) {
+void CmFeedback::Reset(void) {
 	this->Update(0.0f);
+	this->SetColor("1_slice", this->color_slice_);
+	this->SetColor("2_index", this->color_index_);
+	this->Render();
 }
 
-void CmControl::Update(float angle) {
+void CmFeedback::Update(float angle) {
 
 	dtk_rotate_shape(this->GetShape("1_slice"), -180*angle/M_PI);
+	dtk_rotate_shape(this->GetShape("2_index"), -180*angle/M_PI);
+	this->Render();
 	this->angle_ = angle;
 }
 
-bool CmControl::Hide(unsigned int elem) {
+bool CmFeedback::Hide(unsigned int elem) {
 
 	bool res = false;
 	
 	switch(elem) {
-		case CmControl::Fixation:
+		case CmFeedback::Fixation:
 			res = this->HideShape("3_fix");
 			break;
-		case CmControl::Slice:
+		case CmFeedback::Slice:
 			res = this->HideShape("1_slice");
+			res = res & this->HideShape("2_index");
 			break;
 		default:
 			break;
@@ -57,16 +70,17 @@ bool CmControl::Hide(unsigned int elem) {
 	return res;
 }
 
-bool CmControl::Show(unsigned int elem) {
+bool CmFeedback::Show(unsigned int elem) {
 	
 	bool res = false;
 	
 	switch(elem) {
-		case CmControl::Fixation:
+		case CmFeedback::Fixation:
 			res = this->ShowShape("5_fix");
 			break;
-		case CmControl::Slice:
+		case CmFeedback::Slice:
 			res = this->ShowShape("1_slice");
+			res = res & this->ShowShape("2_index");
 			break;
 		default:
 			break;
@@ -75,7 +89,25 @@ bool CmControl::Show(unsigned int elem) {
 	return res;
 }
 
-dtk_hshape CmControl::create_slice(dtk_hshape shp, float cx, float cy, float r, float size, const float* color) {
+void CmFeedback::Hard(unsigned int direction) {
+
+	switch(direction) {
+		case CmFeedback::ToLeft:
+			this->Update(-M_PI/2.0f);
+			this->SetColor("1_slice", this->color_left_);
+			this->SetColor("2_index", this->color_left_);
+			break;
+		case CmFeedback::ToRight:
+			this->Update(M_PI/2.0f);
+			this->SetColor("1_slice", this->color_right_);
+			this->SetColor("2_index", this->color_right_);
+			break;
+	}
+
+	this->Render();
+}
+
+dtk_hshape CmFeedback::create_slice(dtk_hshape shp, float cx, float cy, float r, float size, const float* color) {
 
 	unsigned int numpoints;
 	unsigned int numvert;
@@ -115,18 +147,13 @@ dtk_hshape CmControl::create_slice(dtk_hshape shp, float cx, float cy, float r, 
 	}
 
 	
-	dtk_hshape shapes[] = {
-						dtk_create_complex_shape(NULL, numvert, this->vertices_, this->colors_, 
-									 NULL, numind, this->indices_, DTK_TRIANGLE_FAN, NULL),
-			   			   dtk_create_rectangle_2p(NULL, cx-0.005, cy, cx+0.005, cy+r, 1, dtk_aluminium2_dark)
-	};
-
-	shp = dtk_create_composite_shape(shp, sizeof(shapes)/sizeof(shapes[0]), shapes, 1);
+	shp = dtk_create_complex_shape(NULL, numvert, this->vertices_, this->colors_, 
+									 NULL, numind, this->indices_, DTK_TRIANGLE_FAN, NULL);
 
 	return shp;
 }
 
-dtk_hshape CmControl::create_fixation(dtk_hshape shp, float cx, float cy, float size, float width, const float* color) {
+dtk_hshape CmFeedback::create_fixation(dtk_hshape shp, float cx, float cy, float size, float width, const float* color) {
 
 	dtk_hshape shapes[] = { 
 						dtk_create_rectangle_2p(NULL, 
@@ -143,11 +170,11 @@ dtk_hshape CmControl::create_fixation(dtk_hshape shp, float cx, float cy, float 
 	return shp;
 }
 
-dtk_hshape CmControl::create_limits(dtk_hshape shp, float r, float thick) {
+dtk_hshape CmFeedback::create_limits(dtk_hshape shp, float r, float thick) {
 	
 	dtk_hshape shapes[] = {
-			dtk_create_rectangle_2p(NULL, -r, -thick/2.0f, 0.0f, thick/2.0f, 1, dtk_skyblue_dark),
-			dtk_create_rectangle_2p(NULL, 0.0f, -thick/2.0f, r, thick/2.0f, 1, dtk_scarletred_dark)
+			dtk_create_rectangle_2p(NULL, -r, -thick/2.0f, 0.0f, thick/2.0f, 1, this->color_left_),
+			dtk_create_rectangle_2p(NULL, 0.0f, -thick/2.0f, r, thick/2.0f, 1, this->color_right_)
 	};
 
 	shp = dtk_create_composite_shape(shp, sizeof(shapes)/sizeof(shapes[0]), shapes, 1);

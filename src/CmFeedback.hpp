@@ -1,5 +1,5 @@
-#ifndef CNBITK_MOBILE_CONTROL_HPP
-#define CNBITK_MOBILE_CONTROL_HPP
+#ifndef CNBITK_MOBILE_FEEDBACK_HPP
+#define CNBITK_MOBILE_FEEDBACK_HPP
 
 #include <math.h>
 #include <dtk_colors.h>
@@ -8,14 +8,16 @@
 namespace cnbi {
 	namespace mobile {
 
-class CmControl : public CmEngine {
+class CmFeedback : public CmEngine {
 
 	public:
-		CmControl(float radius = 0.6f, float arc = M_PI/2.0f, float thick = 0.1f);
-		~CmControl(void);
+		CmFeedback(float radius = 0.6f, float arc = M_PI/2.0f, float thick = 0.1f);
+		~CmFeedback(void);
 
 		void Update(float angle);
 		void Reset(void);
+
+		void Hard(unsigned int direction);
 
 		bool Hide(unsigned int element);
 		bool Show(unsigned int element);
@@ -30,6 +32,9 @@ class CmControl : public CmEngine {
 	public:
 		static const unsigned int Fixation 	= 0;
 		static const unsigned int Slice 	= 1;
+
+		static const unsigned int ToLeft    = 1;
+		static const unsigned int ToRight   = 2;
 		
 	private:
 		float 		angle_;
@@ -43,6 +48,11 @@ class CmControl : public CmEngine {
 		float* 	vertices_;
 		float*  colors_;
 		unsigned int* indices_;
+
+		const float* 	color_left_;
+		const float*  	color_right_;
+		const float* 	color_slice_;
+		const float* 	color_index_;
 };
 
 
