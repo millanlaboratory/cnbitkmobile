@@ -5,7 +5,6 @@ lib_LTLIBRARIES = libcnbimobile.la
 libcnbimobile_includedir = $(includedir)/cnbimobile
 libcnbimobile_include_HEADERS = CmEngine.hpp \
 								CmFeedback.hpp \
-								MobileTypes.hpp \
 								Integrator.hpp \
 								Exponential.hpp
 
