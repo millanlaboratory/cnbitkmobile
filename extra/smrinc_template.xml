@@ -41,8 +41,8 @@
 		<mi description="Online MI" protocol="mi_control">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
-					<mi_both_hands>0.7</mi_both_hands>
-					<mi_both_feet>0.7</mi_both_feet>
+					<mi_both_hands>0.8</mi_both_hands>
+					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
 					<mi_both_hands>2</mi_both_hands>
@@ -57,7 +57,7 @@
 					<rejection>0.55</rejection>
 				</ema>
 				<dynamic>
-					<phi>0.5</phi>
+					<phi>0.9</phi>
 					<bias>0.5</bias>	<!-- To check if it works or not -->
 					<inc>0.6</inc>
 					<noreturn>0.7</noreturn>
