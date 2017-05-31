@@ -58,7 +58,7 @@
 				</ema>
 				<dynamic>
 					<phi>0.5</phi>
-					<bias>0.1</bias>
+					<bias>0.5</bias>	<!-- To check if it works or not -->
 					<inc>0.6</inc>
 					<noreturn>0.7</noreturn>
 					<degree>8</degree>
