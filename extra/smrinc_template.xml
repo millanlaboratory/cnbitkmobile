@@ -9,8 +9,8 @@
 	<!-- Experimenter -->
 	<recording>
 		<experimenter>EXPERIMENTER</experimenter>
-		<experiment>smr-mobile</experiment>
-		<project>smr-mobile</project>
+		<experiment>Cybathlon</experiment>
+		<project>Cybathlon</project>
 		<location>LOCATION</location>
 		<date>DATE</date>
 	</recording>
@@ -34,28 +34,44 @@
 			</trial>
 		</mi>
 	</protocol>
+
 	
 	<!-- Online Block -->
 	<online>
-		<mi description="Online MI" protocol="mi_mobile_feedback">
+		<mi description="Online MI" protocol="mi_control">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
 					<mi_both_hands>0.7</mi_both_hands>
 					<mi_both_feet>0.7</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_feet>15</mi_both_feet>
-					<mi_both_hands>15</mi_both_hands>
+					<mi_both_hands>2</mi_both_hands>
+					<mi_both_feet>2</mi_both_feet>
 				</trials>
+
 			</taskset>
-			<exponential>
-				<param key="alpha">0.97</param>
-				<param key="rejection">0.60</param>
-				<param key="shit">6.66</param>
-			</exponential>
 			
-			<integration>0.96</integration>
-			<rejection>0.60</rejection>
+			<integrator>
+				<ema>
+					<alpha>0.97</alpha>
+					<rejection>0.55</rejection>
+				</ema>
+				<dynamic>
+					<phi>0.5</phi>
+					<bias>0.1</bias>
+					<inc>0.6</inc>
+					<noreturn>0.7</noreturn>
+					<degree>8</degree>
+				</dynamic>
+				<vema>
+					<rho>0.5</rho>
+					<gamma>0.6</gamma>
+				</vema>
+			</integrator>
+			
+			<!-- Old parameters - TO BE DELETED -->
+			<integration>0.97</integration>
+			<rejection>0.55</rejection>
 		</mi>
 	</online>
 
@@ -63,10 +79,9 @@
 	<classifier>
 		<kmi0>
 			<name>mi</name>
-			<filename>dummyclassifier.mat</filename>
+			<filename>CLASSIFIER.mat</filename>
 		</kmi0>
 	</classifier>
-
 
 
 	<!-- Standard classifier type list -->
@@ -78,22 +93,16 @@
 				<idfamily>FamilyBiosig</idfamily>
 			</tobi>
 			<ndf>
-				<exec>ndf_mi_mobile</exec>
+				<exec>ndf_smrinc</exec>
 				<pipe>/pipe1</pipe>
 				<id>/bus</id>
 				<ic>/ctrl1</ic>
 				<directory>./</directory>
-				<include>$HOME/.cnbitk/cnbimobile/ndf/</include>
+				<include>$HOME/.cnbitk/cnbismrinc/ndf/</include>
 			</ndf>
 		</mi>
 	</classifiers>
 
-	<!-- Integrators Block with id. Do not touch it-->
-	<integrators>
-		<exponential id="0" description="Exponential smoothing" />
-		<alpha id="1" description="Dynamic alpha" />
-		<grid id="2" description="Attractors' grid" />
-	</integrators>
 
 	<!-- Standard Task List -->
 	<tasksets>
@@ -132,11 +141,6 @@
 			<class id="0" key="mi_both_feet"/>
 			<class id="1" key="mi_both_hands"/>
 		</mi_bfbh>
-		<mi_bhbfrst description="Motor Imagery 3: Feet, Hands, Rest">
-			<class id="0" key="mi_both_feet"/>
-			<class id="1" key="mi_both_hands"/>
-			<class id="2" key="mi_rest"/>
-		</mi_bhbfrst>
 		<artifact_onoff description="Artifact Detection: On, Off">
 			<class id="0" key="artifact_on"/>
 			<class id="1" key="artifact_off"/>
