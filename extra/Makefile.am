@@ -15,5 +15,5 @@ protocolxmldir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/xml
 protocolxml_DATA = smrinc_template.xml \
 				   CLASSIFIER.mat
 
-#bin_SCRIPTS = cp_smrinc_launcher
+bin_SCRIPTS = cp_smrinc_launcher
 

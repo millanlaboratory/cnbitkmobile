@@ -98,7 +98,7 @@
 				<id>/bus</id>
 				<ic>/ctrl1</ic>
 				<directory>./</directory>
-				<include>$HOME/.cnbitk/cnbismrinc/ndf/</include>
+				<include>$HOME/.cnbitk/cnbimobile/ndf/</include>
 			</ndf>
 		</mi>
 	</classifiers>
