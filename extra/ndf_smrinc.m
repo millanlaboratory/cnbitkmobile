@@ -74,6 +74,7 @@ try
         disp('[ndf_smrinc] Killing MATLAB')
         exit;
     end
+    integrator.filepath = ['/tmp/cnbitk-' getenv('USER') '/' datestr(now,'yyyymmdd') '.dynamic_parameters.txt'];
     
     % Updating log file with integrator
     cl_updatelog(loop.cl, sprintf('integrator=%s', integrator.type));
@@ -172,7 +173,7 @@ try
 		% Buffer NDF streams to the ring-buffers
 		buffer.eeg = ndf_add2buffer(buffer.eeg, ndf.frame.eeg(:,1:16));
 		buffer.tri = ndf_add2buffer(buffer.tri, ndf.frame.tri);
-    
+        
         % Classify current eeg frame
         user.bci.support = eegc3_smr_classify(user.bci.analysis, buffer.eeg, user.bci.support);
         
@@ -181,10 +182,38 @@ try
         
         switch(integrator.type)
             case 'ema'
+                useralpha = ndf_read_param(integrator.filepath, 'integrator', 'ema', 'alpha');
+                if(isempty(useralpha) == false)
+                    if(str2double(useralpha) ~= double(integrator.param.alpha))
+                        integrator.param.alpha = str2double(useralpha);
+                        disp(['[ndf_smrinc] - DEBUG: Changed alpha parameter for ema to: ' useralpha]);
+                    end
+                end
                 integrator.nprobs = smrinc_integrator_ema(integrator.cprobs, integrator.nprobs, integrator.param.alpha, integrator.param.rejection);
             case 'dynamic'
+                userphi = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'phi');
+                if(isempty(userphi) == false)
+                    if(str2double(userphi) ~= double(integrator.param.phi))
+                        integrator.param.phi = str2double(userphi);
+                        disp(['[ndf_smrinc] - DEBUG: Changed phi parameter for dynamic to: ' userphi]);
+                    end
+                end
                 integrator.nprobs = smrinc_integrator_dynamic(integrator.cprobs, integrator.nprobs, integrator.coeff, integrator.param.phi, integrator.dt);
             case 'vema'
+                userrho   = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'rho');
+                usergamma = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'gamma');
+                if(isempty(userrho) == false)
+                    if(str2double(userrho) ~= double(integrator.param.rho))
+                        integrator.param.rho = str2double(userrho);
+                        disp(['[ndf_smrinc] - DEBUG: Changed rho parameter for vema to: ' userrho]);
+                    end
+                end
+                if(isempty(usergamma) == false)
+                    if(str2double(usergamma) ~= double(integrator.param.gamma))
+                        integrator.param.gamma = str2double(usergamma);
+                        disp(['[ndf_smrinc] - DEBUG: Changed gamma parameter for vema to: ' usergamma]);
+                    end
+                end
                 integrator.nprobs = smrinc_integrator_vema(integrator.cprobs, integrator.nprobs, integrator.param.rho, integrator.param.gamma, integrator.dt);
         end
         
