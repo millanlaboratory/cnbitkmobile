@@ -7,20 +7,6 @@ DEFAULT_MI_TASK="mi_bhbf"
 
 DEFAULT_FEEDBACK_EXECUTABLE="mi_control"
 
-# Make trap for graceful exits
-trap 'my_exit; exit' SIGINT SIGTERM SIGQUIT SIGHUP
-
-
-# Make trap for graceful exits
-trap 'my_exit; exit' SIGINT SIGTERM SIGQUIT SIGHUP
-
-my_exit()
-{
-    cl_rpc closexdf	
-    wmctrl -c "Feedback"
-	cl_rpc eraseconfig $icomponent $iname
-}
-
 usage(){
 	printf "\n[$NAME] - Usage: $NAME -x XMLPATH [OPTION]...\n\n"
 	printf "	-x 		path of the xml file\n"
@@ -94,76 +80,55 @@ echo "[$NAME] - MI task:  	 $mitask"
 echo "[$NAME] - Integrator:  $itype"
 echo "[$NAME] - Feedback:  	 $feedback"
 
-while true; do
 
-	#Kill existing loop instances and close their terminal windows
-    wmctrl -c "Feedback"
+# Upload all parameters to nameserver and start BCI processing
+echo "[$NAME] - Uploading XML parameters to nameserver"
+cl_init -x $bcixml -lN -B $miblock -T $mitask
 
+# Upload integrator type parameter
+echo "[$NAME] - Uploading integrator parameters to nameserver"
+cl_rpc storeconfig $icomponent $iname $itype
+
+echo "[$NAME] - Opening GDF and log files"
+# Open GDF and log files
+GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".gdf"
+LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)".log"
+cl_rpc openxdf $GDFBASENAME $LOGBASENAME "smrinc"
+
+echo "[$NAME] - Starting BCI process"
+BCIPID=$(cl_init -x $bcixml -scN -B $miblock -T $mitask)
+
+sleep 2
+
+# Launch feedback mi_control
+echo "[$NAME] - Launching $feedback feedback"
+if [ "$feedback" == "mi_control" ]; then
+	$(gnome-terminal -e $feedback) 
+elif [ "$feedback" == "mi_python_control" ]; then
+	echo "[$NAME] - Not implemented yet, shutting down"
+else
+	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
+fi
+
+sleep 2
+pid=$(pidof $feedback) 
+echo "PID:" $pid
+while [ $(pidof $feedback) > /dev/null ]; do
 	sleep 1
-
-	# Upload all parameters to nameserver and start BCI processing
-	echo "[$NAME] - Uploading XML parameters to nameserver"
-	cl_init -x $bcixml -lN -B $miblock -T $mitask
-
-	# Upload integrator type parameter
-	echo "[$NAME] - Uploading integrator parameters to nameserver"
-	cl_rpc storeconfig $icomponent $iname $itype
-	
-	echo "[$NAME] - Opening GDF and log files"
-	# Open GDF and log files
-	GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".gdf"
-	LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)".log"
-	cl_rpc openxdf $GDFBASENAME $LOGBASENAME "smrinc"
-
-	echo "[$NAME] - Starting BCI process"
-	BCIPID=$(cl_init -x $bcixml -scN -B $miblock -T $mitask)
-	
-	sleep 2
-
-	# Launch feedback mi_control
-	echo "[$NAME] - Launching $feedback feedback"
-	if [ "$feedback" == "mi_control" ]; then
-		gnome-terminal -e $feedback --title "Feedback"
-	elif [ "$feedback" == "mi_python_control" ]; then
-		echo "Not implemented yet"
-		my_exit;
-	else
-		echo "[$NAME] - Uknown feedback executable provided ($feedback)"
-		my_exit;
-	fi
-
-	sleep 2
-	
-	# Keep reading user input here until Q is pressed
-	while :
-	do
-	    read -t 1 -n 1 key
-	    if [[ $key = q ]]; then
-		break
-	    fi
-	done
-
-	# Close the GDF file
-	echo "[$NAME] - Closing GDF file"
-	cl_rpc closexdf
-
-	# Terminate MATLAB prcesses
-	echo "[$NAME] - Terminating BCI process"
-	cl_rpc terminate $BCIPID
-	
-	# Unload configuration from nameserver
-	cl_rpc eraseconfig $icomponent $iname
-
-	# Shut down everything
-	echo "[$NAME] - Closing all terminals"
-        wmctrl -c "Feedback"
-	
-	# Ask whether to re-run with same parameters
-	zenity --question --text="Do you want to run again with same parameters?" --ok-label="Yes" --cancel-label="No"
-	if [[ $? == 0 ]] ; then
-	    echo "[$NAME] - Running with the same taskset and commands"
-	else
-	    echo "Exiting"
-	    break
-	fi
 done
+sleep 2
+
+# Close the GDF file
+echo "[$NAME] - Closing GDF file"
+cl_rpc closexdf
+sleep 1
+
+# Terminate MATLAB prcesses
+echo "[$NAME] - Terminating BCI process"
+cl_rpc terminate $BCIPID
+sleep 1
+
+# Unload configuration from nameserver
+cl_rpc eraseconfig $icomponent $iname
+sleep 1
+
