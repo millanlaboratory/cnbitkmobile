@@ -9,8 +9,8 @@ Open a GUI for changing the parameters of the integrators and saves them to
 /tmp/cnbitk-$USER/$DATE.smrinc_parameters.txt
 """
 
-from tkinter import *
-from tkinter import ttk
+from Tkinter import *
+import ttk
 from datetime import datetime
 import os
 
