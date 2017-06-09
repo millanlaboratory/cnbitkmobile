@@ -44,6 +44,10 @@ def val_changed(param):
 #Main window
 root = Tk()
 root.title('Enter parameters')
+
+ttk.Style().configure("TButton", font=('Lato', '10'))
+ttk.Style().configure("TLabel", font=('Helvetica', '10'))
+
 try:
     icon = Image("photo", file="icon.gif")
     root.tk.call('wm','iconphoto',root._w,icon)
@@ -131,8 +135,8 @@ rho_saved.grid(column=3, row=8)
 
 #Dict for accessing objects pertaining each parameter
 parameters = {'alpha' : [alpha_saved, alpha_button, alpha, 'ema'], 
-          'phi' : [phi_saved, phi_button, phi, 'dynamical'],
-          'chi' : [chi_saved, chi_button, chi, 'dynamical'],
+          'phi' : [phi_saved, phi_button, phi, 'dynamic'],
+          'chi' : [chi_saved, chi_button, chi, 'dynamic'],
           'gamma' : [gamma_saved, gamma_button, gamma, 'vema'],
           'rho' : [rho_saved, rho_button, rho, 'vema']}
 
@@ -143,8 +147,9 @@ chi.trace('w', lambda n1,n2,op,parameter='chi' : val_changed(parameter))
 gamma.trace('w', lambda n1,n2,op,parameter='gamma' : val_changed(parameter))
 rho.trace('w', lambda n1,n2,op,parameter='rho' : val_changed(parameter))
 
+phi_saved['foreground']='#B6B6B4'
+
 for child in mainframe.winfo_children():
     child.grid_configure(padx=5, pady=5)
-
 
 root.mainloop()
