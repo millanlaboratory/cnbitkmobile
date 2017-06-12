@@ -51,6 +51,17 @@
 
 			</taskset>
 			
+			<!-- Old parameters - TO BE DELETED -->
+			<integration>0.97</integration>
+			<rejection>0.55</rejection>
+			
+			<!-- New feedback trial configuration -->
+			<trials>
+				<mi_both_hands>2</mi_both_hands>
+				<mi_both_feet>2</mi_both_feet>
+			</trials>
+
+			<!-- New intergrator configuration -->			
 			<integrator>
 				<ema>
 					<alpha>0.97</alpha>
@@ -58,6 +69,7 @@
 				</ema>
 				<dynamic>
 					<phi>0.9</phi>
+					<chi>1.0</chi>
 					<bias>0.5</bias>	<!-- To check if it works or not -->
 					<inc>0.6</inc>
 					<noreturn>0.7</noreturn>
@@ -67,11 +79,7 @@
 					<rho>0.5</rho>
 					<gamma>0.6</gamma>
 				</vema>
-			</integrator>
-			
-			<!-- Old parameters - TO BE DELETED -->
-			<integration>0.97</integration>
-			<rejection>0.55</rejection>
+			</integrator>	
 		</mi>
 	</online>
 

@@ -74,7 +74,7 @@ try
         disp('[ndf_smrinc] Killing MATLAB')
         exit;
     end
-    integrator.filepath = ['/tmp/cnbitk-' getenv('USER') '/' datestr(now,'yyyymmdd') '.dynamic_parameters.txt'];
+    integrator.filepath = ['/tmp/cnbitk-' getenv('USER') '/' datestr(now,'yyyymmdd') '.smrinc_parameters.txt'];
     
     % Updating log file with integrator
     cl_updatelog(loop.cl, sprintf('integrator=%s', integrator.type));
@@ -198,7 +198,14 @@ try
                         disp(['[ndf_smrinc] - DEBUG: Changed phi parameter for dynamic to: ' userphi]);
                     end
                 end
-                integrator.nprobs = smrinc_integrator_dynamic(integrator.cprobs, integrator.nprobs, integrator.coeff, integrator.param.phi, integrator.dt);
+                userchi = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'chi');
+                if(isempty(userchi) == false)
+                    if(str2double(userchi) ~= double(integrator.param.chi))
+                        integrator.param.chi = str2double(userchi);
+                        disp(['[ndf_smrinc] - DEBUG: Changed chi parameter for dynamic to: ' userchi]);
+                    end
+                end
+                integrator.nprobs = smrinc_integrator_dynamic(integrator.cprobs, integrator.nprobs, integrator.coeff, integrator.param.phi, integrator.param.chi, integrator.dt);
             case 'vema'
                 userrho   = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'rho');
                 usergamma = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'gamma');
