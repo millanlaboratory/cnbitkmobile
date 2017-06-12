@@ -94,6 +94,7 @@ try
                 cl_updatelog(loop.cl, sprintf('degree=%f', integrator.param.degree));
             case 'vema'
                 integrator = smrinc_integrator_xmlparam_vema(loop.cfg.config, integrator);
+                integrator.xchg = 0;
                 cl_updatelog(loop.cl, sprintf('rho=%f',     integrator.param.rho));
                 cl_updatelog(loop.cl, sprintf('gamma=%f',   integrator.param.gamma));
         end  
@@ -221,7 +222,8 @@ try
                         disp(['[ndf_smrinc] - DEBUG: Changed gamma parameter for vema to: ' usergamma]);
                     end
                 end
-                integrator.nprobs = smrinc_integrator_vema(integrator.cprobs, integrator.nprobs, integrator.param.rho, integrator.param.gamma, integrator.dt);
+                
+                [integrator.nprobs, integrator.xchg] = smrinc_integrator_vema(integrator.cprobs, integrator.xchg, integrator.nprobs, integrator.param.rho, integrator.param.gamma, integrator.dt);
         end
         
 		% Handle async TOBI iD communication
