@@ -13,12 +13,13 @@ usage(){
 	printf "	-i 		integrator type [ema, dynamic, vema]\n"
 	printf "	-b 		experiment block 	[Default: 'mi']\n"
 	printf "	-t 		experiment taskset 	[Default: 'mi_bhbf']\n"
+	printf "	-e 		Feedback executable [Default: 'mi_control']\n"
 }
 
 miblock=$DEFAULT_MI_BLOCK
 mitask=$DEFAULT_MI_TASK
 feedback=$DEFAULT_FEEDBACK_EXECUTABLE
-
+tmp_python_feedback=/home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/feedback.py
 icomponent="integrator"
 iname="type"
 
@@ -26,7 +27,7 @@ xflag=false
 iflag=false
 
 # Getting optional arguments
-while getopts ":t:b:x:i:f:" opt; do
+while getopts ":t:b:x:i:e:" opt; do
 	case $opt in
 		t)
 			mitask=$OPTARG
@@ -43,7 +44,7 @@ while getopts ":t:b:x:i:f:" opt; do
 			itype=$OPTARG
 			iflag=true;
 			;;
-		f)
+		e)
 			feedback=$OPTARG
 			;;
 		\?)
@@ -105,12 +106,14 @@ echo "[$NAME] - Launching $feedback feedback"
 if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
 elif [ "$feedback" == "mi_python_control" ]; then
-	echo "[$NAME] - Not implemented yet, shutting down"
+	$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
+	feedback=python
+	#echo "[$NAME] - Not implemented yet, shutting down"
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
 
-sleep 2
+sleep 1
 pid=$(pidof $feedback) 
 echo "PID:" $pid
 while [ $(pidof $feedback) > /dev/null ]; do

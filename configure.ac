@@ -44,6 +44,31 @@ AC_SEARCH_LIBS_CLASS([ICMessage], [tobiic], [#include <tobiic/ICMessage.hpp>], ,
 			AC_MSG_ERROR([The tobiic library cannot be found.]))
 LIBS="$save_LIBS"
 
+
+# Python
+AM_PATH_PYTHON([3])
+PY_PREFIX=`$PYTHON -c 'import sys ; print (sys.prefix)'`
+PYTHON_LIBS="-lpython$PYTHON_VERSION"
+PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
+
+AC_SUBST([PYTHON_LIBS])
+AC_SUBST([PYTHON_CFLAGS])
+dnl Checking python3-tk
+AC_MSG_CHECKING([for the python3-tk package])
+ac_tk_result=`$PYTHON -c 'try:
+    from tkinter import *
+except Exception, e:
+    print str(e)' 2> /dev/null`
+
+if test -z "$ac_tk_result"; then
+    AC_MSG_RESULT([yes])
+else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([cannot import Python module "tkinter".
+    Please check if you have python3-tk installed. The error was:
+    $ac_tk_result])
+fi
+
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen] [no])
 if test "$DOXYGEN" = no ; then 
 	AC_MSG_ERROR(Cannot find doxygen.) 
@@ -57,6 +82,6 @@ AC_SUBST([REVISION],[lib_revision])
 AC_SUBST([AGE],[lib_age])
 AC_SUBST(AM_LDFLAGS)
 
-AC_CONFIG_FILES([Makefile src/Makefile extra/Makefile src/cnbimobile.pc])
+AC_CONFIG_FILES([Makefile src/Makefile extra/Makefile gui/Makefile src/cnbimobile.pc])
 
 AC_OUTPUT
