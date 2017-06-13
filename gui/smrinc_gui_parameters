@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun  7 09:44:46 2017
@@ -9,8 +9,8 @@ Open a GUI for changing the parameters of the integrators and saves them to
 /tmp/cnbitk-$USER/$DATE.smrinc_parameters.txt
 """
 
-from tkinter import *
-from tkinter import ttk
+from Tkinter import *
+import ttk
 from datetime import datetime
 import os
 
@@ -23,6 +23,12 @@ filename = '{}{}{}.smrinc_parameters.txt'.format(
 
 if not os.path.exists(save_path):
     os.makedirs(save_path)
+
+if 'CNBITK_PYTHON_DATA' in os.environ:
+    graphics_path = os.environ['CNBITK_PYTHON_DATA']
+else:
+    graphics_path = ''
+
 
 def save(param, *args):
     """Save changed parameter to file, include timestamp"""
@@ -49,7 +55,7 @@ ttk.Style().configure("TButton", font=('Lato', '10'))
 ttk.Style().configure("TLabel", font=('Helvetica', '10'))
 
 try:
-    icon = Image("photo", file="icon.gif")
+    icon = Image("photo", file=os.path.join(graphics_path, "icon.gif"))
     root.tk.call('wm','iconphoto',root._w,icon)
 except TclError:
     pass
@@ -74,7 +80,7 @@ mainframe.rowconfigure(0, weight=1)
 
 #Graphics
 try:
-    cnbi_logo_img = PhotoImage(file='{}cnbi_logo.gif'.format(image_path))
+    cnbi_logo_img = PhotoImage(file=os.path.join(graphics_path, 'cnbi_logo.gif'))
     cnbi_logo = ttk.Label(mainframe, image=cnbi_logo_img)
     cnbi_logo.grid(column=0, row=0, columnspan=4)
 except TclError:
