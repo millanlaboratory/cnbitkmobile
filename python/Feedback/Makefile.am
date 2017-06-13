@@ -4,7 +4,7 @@ bin_SCRIPTS = mi_online_python
 
 mi_online_pythondir = $(prefix)/bin
 
-mi_online_python_PYTHON = trialstages.py
+#mi_online_python_PYTHON = trialstages.py
 
 graphicsdir = $(prefix)/share/cnbipython/
 

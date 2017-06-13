@@ -109,7 +109,7 @@ elif [ "$feedback" == "mi_online_python" ]; then
 	#cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
 	#cd /home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/
 	#$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
-	$(gnome-terminal -e "$feedback -d $bcixml -t $mitask -b $miblock")
+	$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
 	#cd $currpwd
 	feedback=python
 	#echo "[$NAME] - Not implemented yet, shutting down"
