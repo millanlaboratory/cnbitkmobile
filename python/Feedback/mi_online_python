@@ -1,0 +1,445 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May  5 14:02:52 2017
+
+@author: Felix Bauer
+
+Visual interface for BCI feedback
+"""
+
+import argparse
+import sys
+import os
+from lxml import etree as et
+import pygame as pg
+import numpy as np
+from pybci import key_logger as kl
+import trialstages as tr
+
+
+
+#Settings:
+#Rotation that corresponds to BCI value being 0 or 1 (in degrees)
+max_rotation = 90
+# Initial window height and width and coordinates of center
+s_width, s_height = 800, 800
+#ratio of radius of inner and outer circle
+rad_ratio = 0.8
+#colors
+black = [0,0,0]
+blue = [30,60,255]
+green = [0,150,0]
+red = [230,0,0]
+dark_grey = [90,90,90]
+light_grey = [205,205,205]
+
+#Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-x', help='path to XML file')
+parser.add_argument('-t', help='Taskset, default: mi_bhbf')
+parser.add_argument('-b', help='block, default: mi')
+args = parser.parse_args()
+path = args.x
+tskst = args.t
+block = args.b
+if args.x == None:
+    sys.exit('ERROR: No path to XML file given')
+if args.t == None:
+    #sys.exit('ERROR: No taskset given')
+    print('WARNING: no taskset given, using default: bhbf_mi')
+    tskst = 'mi_bhbf'
+if args.b == None:
+    #sys.exit('ERROR: No block given')
+    print('WARNING: no block given, using default: mi')
+    block = 'mi'
+    
+
+#Functions for communication with BCI loop    
+
+def get_bci_val():
+    """ determine the current (integrated) bci output from TiC"""
+
+    if not go_on or not pg.display.get_init():
+        return    
+ 
+    while True:
+        if handle_events() == 'exit':
+            return 'exit'
+        elif handle_events() == '0':
+            return 0
+        elif handle_events() == '1':
+            return 1
+        #Obtain probability from TiC
+        prob = bci.readTicClassProb(block, task_event)
+        if prob != None:
+            #Correct if probability for left task is being received
+            if bci_inverse:
+                prob = 1-prob
+            return prob
+
+def get_bci_class():
+    """determine task that is being sent via TiC
+       needed to determine left and right tasks
+    """
+
+    print('Obtaining BCI class')
+    while True:
+        #Obtain probability from TiC
+        out = bci.readTicAllProb()
+        if out != None:
+            print('Successfull')
+            return out[0]
+
+
+#functions for drawing on the window
+
+def centered_rect(image, s_center_x, s_center_y):
+    """return a rect object of the given image, with center in s_center_x, s_center_y"""
+    if not go_on or not pg.display.get_init():
+        return
+    width, height = image.get_rect()[2], image.get_rect()[3]
+    return [s_center_x - width/2, s_center_y - height/2, width, height]
+
+
+def ptr_update(bci_val, cue=None, boom=None, hitrate=None):
+    """draw pointer, rotated according to bci_val, cue in center, 
+       if boom != None pointer changes color accordingly or in case of timeout
+       text is shown below pointer
+    """
+    
+    if not go_on or not pg.display.get_init():
+        return
+    
+    #Determine size of window and coordinates of center
+    screen = pg.display.get_surface()
+    s_center_x = screen.get_size()[0]/2
+    s_center_y = screen.get_size()[1]/2
+    
+    screen.fill(black)
+                                
+    #Radii to draw lines and some of the circles
+    outer_radius = pointer_grey.get_rect()[2]/2
+    inner_radius = outer_radius*rad_ratio
+    
+    #Outer dark grey circle
+    pg.draw.circle(screen, dark_grey, 
+                       [int(s_center_x),int(s_center_y)], int(outer_radius), 0)
+
+    #Rotate pointer according to bci value and change color if boom
+    rotation = - (2*bci_val - 1) * max_rotation
+    if boom == None or boom == 'time out':
+        new_pointer = pg.transform.rotate(pointer_grey, rotation)
+    elif boom == 'left':
+        new_pointer = pg.transform.rotate(pointer_blue, rotation)
+    elif boom == 'right':
+        new_pointer = pg.transform.rotate(pointer_red, rotation)        
+    #Determine rect (position and size) of pointer and draw it
+    new_rect = centered_rect(new_pointer, s_center_x, s_center_y)
+    screen.blit(new_pointer, new_rect)
+       
+    #Green rest line
+    pg.draw.line(screen, green, [s_center_x, s_center_y - inner_radius], [s_center_x, s_center_y - outer_radius], 3)
+    
+    #Blue class 0-line
+    angle0 = -(2*l_thr - 1) * max_rotation
+    x0_out = -outer_radius*np.sin(np.pi*angle0/180.)
+    y0_out = -outer_radius*np.cos(np.pi*angle0/180.)
+    x0_in = rad_ratio*x0_out
+    y0_in = rad_ratio*y0_out
+    pg.draw.line(screen, blue, [s_center_x+x0_in,s_center_y+y0_in], [s_center_x+x0_out,s_center_y+y0_out], 3)
+    
+    #Red class 1-line
+    angle1 = (2*r_thr - 1) * max_rotation
+    x1_out = outer_radius*np.sin(np.pi*angle1/180.)
+    y1_out = -outer_radius*np.cos(np.pi*angle1/180.)
+    x1_in = rad_ratio*x1_out
+    y1_in = rad_ratio*y1_out
+    pg.draw.line(screen, red, [s_center_x+x1_in,s_center_y+y1_in], [s_center_x+x1_out,s_center_y+y1_out], 3)
+    
+    #Inner black circle
+    pg.draw.circle(screen, black, [int(s_center_x),int(s_center_y)], int(inner_radius), 0)
+    
+    #Outer black ring to reduce flickering
+    screen.blit(ring, centered_rect(ring, s_center_x, s_center_y))
+    
+    #Cue
+    if hitrate != None:
+        text_font = pg.font.SysFont('lato', 70)
+        text_surface = text_font.render('{: .2%}'.format(hitrate), False, light_grey)
+        screen.blit(text_surface, centered_rect(text_surface, s_center_x, s_center_y))
+    elif cue != None:
+        screen.blit(cue_dict[cue], centered_rect(cue_dict[cue], s_center_x, s_center_y))
+
+    #After time out show text
+    if boom == 'time out':
+        text_rect = centered_rect(text_timeout, s_center_x, s_center_y+250)
+        screen.blit(text_timeout, text_rect)
+    
+    pg.display.update()
+
+    return None
+
+
+
+def make_window(width, height, bci_val, cue, boom=None):
+    """Create a window with given size, resize if already exists, 
+       draw pointer in center, pass on bci_val, cue and boom to ptr_update
+    """
+    pg.display.set_mode((width, height), pg.RESIZABLE)
+    pg.display.set_caption('Feedback')
+    ptr_update(bci_val, cue, boom)
+
+def fullscreen(bci_val, cue, boom=None):
+    """Maximize window if not maximized yet. If already max.ed then make smaller"""
+    global maximized_window
+    pg.display.quit()
+    pg.display.init()
+    if maximized_window:
+        make_window(s_width, s_height, bci_val, cue, boom)
+    else:
+        make_window(0, 0, bci_val, cue, boom)
+    maximized_window = not maximized_window
+
+def handle_events():
+    """change window or exit program if requested"""
+    global go_on
+    if not pg.display.get_init():
+        go_on = False
+        return 'exit'
+    for event in pg.event.get():
+        #Exit program when closing window or hitting escape
+        if (event.type  == pg.QUIT 
+        or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE)):
+            print('EXIT')
+            go_on = False
+            pg.quit()
+            return 'exit'
+        #Change window size
+        elif event.type == pg.VIDEORESIZE:
+            w, h = event.size
+            make_window(w, h, 0.5, None)
+            return None
+        #Maximize window when pressing f
+        elif event.type == pg.KEYDOWN and event.key == pg.K_f:
+            fullscreen(0.5, None)
+            return None
+        #Start new block at end of feedback routine
+        elif event.type == pg.KEYDOWN and event.key == pg.K_r:
+            return 'r'
+        #simulate bci value 0 or 1
+        elif event.type == pg.KEYDOWN and event.key == pg.K_v:
+            return '0'
+        elif event.type == pg.KEYDOWN and event.key == pg.K_b:
+            return '1'
+        #continue after start when space bar is pressed
+        elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+            return 'continue'
+
+
+def read_xml():    
+    """read settings from XML file"""
+    
+    try:
+        xml = et.parse(path).getroot()
+    except IOError:
+        sys.exit('ERROR: XML file {} not found'.format(path))
+    
+    #make sure that given block and taskset exist
+    if xml.find('.//{}'.format(block)) == None:
+        sys.exit('ERROR: block {} not found in XML file'.format(block))
+    taskset = xml.find('./tasksets/{}'.format(tskst))
+    if taskset == None:
+        sys.exit('ERROR: taskset {} not found in XML file'.format(tskst))
+    
+    #durations
+    global t_fixation, t_cue, t_timeout, t_boom
+    try:
+        times = xml.find('./protocol/{}/trial'.format(block))
+        t_fixation = float(times.findtext('fixation'))
+        t_cue = float(times.findtext('cue'))
+        t_timeout = float(times.findtext('timeout'))
+        t_boom = float(times.findtext('boom'))
+    except (AttributeError, TypeError):
+        sys.exit('ERROR: problem while determining durations from XML file')
+    
+    #Identify tasks
+    global task_event, bci_inverse
+    task_event = get_bci_class()
+    try:
+        right_task = taskset.find('./class[@id="0"]').attrib['key']
+        left_task = taskset.find('./class[@id="1"]').attrib['key']
+        #rest_task = taskset.find('./class[@id="2"]').attrib['key']
+    except (AttributeError, KeyError):
+        sys.exit('ERROR: not all class ids were found in XML file')
+    try:
+        event_element = xml.find('./tasks').xpath(
+                    './/gdfevent[text()="{:#06x}"]'.format(int(task_event)))
+        bci_task = event_element[0].getparent().tag
+    except (AttributeError, IndexError):
+        sys.exit('ERROR: problem while determining tasks: cannot find BCI class in XML file')
+    #if task corresponds to left, get_bci_val will correct for that
+    if bci_task == right_task:
+        bci_inverse = False
+    elif bci_task == left_task:
+        bci_inverse = True
+    else:
+        sys.exit('ERROR: BCI probability does not correspond to given taskset')
+    
+    #identify reset event
+    global evtLeft, evtRight, evtRest, evtCFeed, evtHit, evtMiss, evtFix, evtOff
+    try:
+        evtLeft = int(xml.findtext('./tasks/{}/gdfevent'.format(left_task)), 16)
+        evtRight = int(xml.findtext('./tasks/{}/gdfevent'.format(right_task)), 16)
+        evtRest = int(xml.findtext('./tasks/{}/gdfevent'.format('mi_rest')), 16)
+        evtCFeed = int(xml.findtext('./events/gdfevents/cfeedback'), 16)
+        evtHit = int(xml.findtext('./events/gdfevents/targethit'), 16)
+        evtMiss = int(xml.findtext('./events/gdfevents/targetmiss'), 16)
+        evtFix = int(xml.findtext('./events/gdfevents/fixation'), 16)
+        evtOff = int(xml.findtext('./events/gdfevents/off'), 16)
+    except TypeError:
+        sys.exit('ERROR: cannot find all required event ids in XML file')
+
+    #numbers of trials and list to indicate order of trials
+    global n_right, n_left, n_rest, n_tasks, tasks
+    try:
+        n_right = int(xml.findtext('./online/{}/trials/{}'.format(block, right_task)))
+        n_left = int(xml.findtext('./online/{}/trials/{}'.format(block, left_task)))
+        n_rest = int(xml.findtext('./online/{}/trials/{}'.format(block, 'mi_rest')))
+    except TypeError:
+        sys.exit('ERROR: problem while determining numbers of trials from XML file')
+    tasks = n_rest*['rest'] + n_right*['right'] + n_left*['left']
+    n_tasks = len(tasks)
+    np.random.shuffle(tasks)
+    
+    #thresholds
+    global r_thr, l_thr
+    try:
+        r_thr = float(xml.findtext('.//threshold/{}'.format(right_task)))
+        l_thr = 1-float(xml.findtext('.//threshold/{}'.format(left_task)))
+    except TypeError:
+        sys.exit('ERROR: problem while determining thresholds from XML file')
+    
+    print('Settings loaded')
+
+def initialize_program():
+    """Initialize keylogger object, list with trials and pygame, open window"""
+    pg.init()
+    #Ignore mouse motion and clicks
+    pg.event.set_blocked((pg.MOUSEBUTTONUP, pg.MOUSEBUTTONDOWN, pg.MOUSEMOTION))
+    print('Pygame initialized')
+
+    #Load images
+    global pointer_grey, pointer_red, pointer_blue, ring, text_timeout
+    
+    if 'CNBITK_PYTHON_DATA' in os.environ:
+        graphics_path = os.environ['CNBITK_PYTHON_DATA']
+        print('looking for graphics in {}'.format(graphics_path))
+    else:
+        print('CNBITK_PYTHON_DATA not defined - looking for graphics locally')
+        graphics_path = 'graphics'
+    try:
+        #pointer in rest-position
+        pointer_grey = pg.image.load(os.path.join(graphics_path, 'ptr.gif'))
+        pointer_red = pg.image.load(os.path.join(graphics_path, 'ptr_red.gif'))
+        pointer_blue = pg.image.load(os.path.join(graphics_path, 'ptr_blue.gif'))
+        #black ring around pointer
+        ring = pg.image.load(os.path.join(graphics_path, 'blk_ring.gif'))
+        #Time out text
+        text_timeout = pg.image.load(os.path.join(graphics_path, 'timeout.gif'))
+        #cnbi logo as icon
+        cnbi_icon = pg.image.load(os.path.join(graphics_path, 'icon0.gif'))
+        #store graphics for cues in dict
+        global cue_dict
+        cue_dict = {}
+        cue_dict['left'] = pg.image.load(os.path.join(graphics_path, 'l_arrow.gif'))
+        cue_dict['right'] = pg.image.load(os.path.join(graphics_path, 'r_arrow.gif'))
+        cue_dict['rest'] = pg.image.load(os.path.join(graphics_path, 'circle.gif'))
+        cue_dict['fixation'] = pg.image.load(os.path.join(graphics_path, 'cross.gif'))
+    except:
+        sys.exit('ERROR: could not load grahpics')
+    print('Graphics loaded')
+
+    #Open the window
+    global maximized_window
+    maximized_window = False
+    pg.display.set_icon(cnbi_icon)
+    make_window(s_width, s_height, 0.5, None)
+
+def end_routine():
+    """ Routine after trials have ended:
+        
+    If r is pressed feedback_routine() is called again
+    Otherwise does nothing (but still allows to exit program and resize window)
+    """
+    print('\nEnd of block - to start new block press r \n')
+    while handle_events() != 'exit':
+        if handle_events() == 'r':
+            print('Re-reading XML file')
+            read_xml()
+            print('\nStarting new block')
+            feedback_routine()
+            return
+    return
+
+def feedback_routine():
+    """ Routine during actual trials:
+        
+    Goes through the list of tasks created by read_xml(), for each initiates 
+    fixation stage, cue stage, feedback stage (including boom stage)
+    Counts success rate during IC trials and displays it at end of block
+    
+    """
+    count_tasks = 0
+    count_ic_tasks = 0
+    count_ic_hits = 0
+    ptr_update(0.5)
+    for tsk in tasks:
+        if handle_events() == 'exit':
+            return
+        #Run the actual feedback routine
+        count_tasks += 1
+        tr.fixation_stage(tsk)
+        print('\nTask {} of {}: {}'.format(count_tasks, n_tasks, tsk))
+        tr.cue_stage(tsk)
+        hit = tr.feedback_stage(tsk, t_timeout)
+        if tsk != 'rest':
+            count_ic_tasks += 1
+            count_ic_hits += hit
+    if count_ic_tasks != 0:
+        hit_rate = float(count_ic_hits)/float(count_ic_tasks)
+        ptr_update(0.5, hitrate=hit_rate)
+    else:
+        ptr_update(0.5)
+    #Call end_routine to allow for re-running the feedback
+    #end_routine()
+    return
+
+
+def main():
+    global go_on, app, bci
+    go_on = True
+    app = kl.QtGui.QApplication(kl.sys.argv)
+    #Initialize KeyLogger object to communicate with BCI
+    try:
+        bci = kl.KeyLogger()
+    except:
+        sys.exit('ERROR: could not connect to BCI loop')  
+    
+    read_xml()
+    initialize_program()
+    
+    #Wait until space bar is pressed
+    #ptr_update(0.5)
+    print('Ready. Press space bar to continue')
+    while True:
+        if handle_events() == 'continue':
+            break
+        if handle_events() == 'exit':
+            return
+    
+    feedback_routine()
+   
+
+#call main function
+if __name__ == '__main__': main()
