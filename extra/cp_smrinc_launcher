@@ -105,14 +105,8 @@ echo "[$NAME] - Launching $feedback feedback"
 if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
 elif [ "$feedback" == "mi_online_python" ]; then
-	#currpwd=$PWD
-	#cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
-	#cd /home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/
-	#$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
 	$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
-	#cd $currpwd
 	feedback=python
-	#echo "[$NAME] - Not implemented yet, shutting down"
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
@@ -122,9 +116,9 @@ pid=$(pidof $feedback)
 echo "PID:" $pid
 
 echo "[$NAME] - Launching the GUI"
-smrinc_gui_parameters
+smrinc_gui_parameters &
 
-while [ $(pidof $feedback) > /dev/null ]; do
+while [ -n "$(ps -p $pid -o pid=)" ]; do
 	sleep 1
 done
 sleep 2
@@ -140,6 +134,11 @@ cl_rpc terminate $BCIPID
 sleep 1
 
 # Unload configuration from nameserver
+echo "[$NAME] - Unload configuration from nameserver"
 cl_rpc eraseconfig $icomponent $iname
 sleep 1
+
+# Close python gui
+echo "[$NAME] - Close python GUI"
+killall -9 python
 
