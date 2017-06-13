@@ -4,8 +4,6 @@ bin_SCRIPTS = mi_online_python
 
 mi_online_pythondir = $(prefix)/bin
 
-#mi_online_python_PYTHON = trialstages.py
-
 graphicsdir = $(prefix)/share/cnbipython/
 
 graphics_DATA = graphics/blk_ring.gif	\
@@ -21,5 +19,13 @@ graphics_DATA = graphics/blk_ring.gif	\
 			    graphics/r_arrow.gif		\
 			    graphics/timeout.gif	
 
+install-exec-local:
+	python setup.py install \
+		--prefix $(prefix) \
+		--install-lib $(prefix)/lib/cnbipython/ \
+		--record $(prefix)/lib/cnbipython/install_files.txt \
+		--verbose
 
-
+uninstall-local: 
+	cat $(prefix)/lib/cnbipython/install_files.txt | xargs rm -rf 
+	rm -rf $(prefix)/lib/cnbipython/
