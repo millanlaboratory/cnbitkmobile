@@ -55,7 +55,7 @@ ttk.Style().configure("TButton", font=('Lato', '10'))
 ttk.Style().configure("TLabel", font=('Helvetica', '10'))
 
 try:
-    icon = Image("photo", file=os.path.join(graphics_path, "icon.gif"))
+    icon = Image("photo", file=os.path.join(graphics_path, "cnbi_icon.gif"))
     root.tk.call('wm','iconphoto',root._w,icon)
 except TclError:
     pass
