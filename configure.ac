@@ -47,7 +47,7 @@ LIBS="$save_LIBS"
 
 # Python
 AM_PATH_PYTHON([3])
-PY_PREFIX=`$PYTHON -c 'import sys ; print (sys.prefix)'`
+PY_PREFIX=`python -c 'import sys ; print (sys.prefix)'`
 PYTHON_LIBS="-lpython$PYTHON_VERSION"
 PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
 
@@ -55,7 +55,7 @@ AC_SUBST([PYTHON_LIBS])
 AC_SUBST([PYTHON_CFLAGS])
 dnl Checking python3-tk
 AC_MSG_CHECKING([for the python3-tk package])
-ac_tk_result=`$PYTHON -c 'try:
+ac_tk_result=`python3 -c 'try:
     from tkinter import *
 except Exception, e:
     print str(e)' 2> /dev/null`
