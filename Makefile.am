@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 SUBDIRS = extra/ \
-	  gui/
+	  gui/ \
+	  python/Feedback/
 
 # Removed src/ for the time being (using python feedback)
 		  

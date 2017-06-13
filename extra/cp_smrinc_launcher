@@ -5,7 +5,7 @@ NAME="cp_smrinc_launcher"
 DEFAULT_MI_BLOCK="mi"
 DEFAULT_MI_TASK="mi_bhbf"
 
-DEFAULT_FEEDBACK_EXECUTABLE="mi_control"
+DEFAULT_FEEDBACK_EXECUTABLE="mi_online_python"
 
 usage(){
 	printf "\n[$NAME] - Usage: $NAME -x XMLPATH [OPTION]...\n\n"
@@ -13,14 +13,12 @@ usage(){
 	printf "	-i 		integrator type [ema, dynamic, vema]\n"
 	printf "	-b 		experiment block 	[Default: 'mi']\n"
 	printf "	-t 		experiment taskset 	[Default: 'mi_bhbf']\n"
-	printf "	-e 		Feedback executable [Default: 'mi_control']\n"
+	printf "	-e 		Feedback executable [Default: 'mi_online_python']\n"
 }
 
 miblock=$DEFAULT_MI_BLOCK
 mitask=$DEFAULT_MI_TASK
 feedback=$DEFAULT_FEEDBACK_EXECUTABLE
-#tmp_python_feedback=/home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/feedback.py
-tmp_python_feedback=/home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/feedback.py
 icomponent="integrator"
 iname="type"
 
@@ -106,12 +104,13 @@ sleep 2
 echo "[$NAME] - Launching $feedback feedback"
 if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
-elif [ "$feedback" == "mi_python_control" ]; then
-	currpwd=$PWD
+elif [ "$feedback" == "mi_online_python" ]; then
+	#currpwd=$PWD
 	#cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
-	cd /home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/
-	$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
-	cd $currpwd
+	#cd /home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/
+	#$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
+	$(gnome-terminal -e "$feedback -d $bcixml -t $mitask -b $miblock")
+	#cd $currpwd
 	feedback=python
 	#echo "[$NAME] - Not implemented yet, shutting down"
 else
