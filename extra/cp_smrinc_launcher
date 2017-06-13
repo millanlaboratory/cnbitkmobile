@@ -91,8 +91,8 @@ cl_rpc storeconfig $icomponent $iname $itype
 
 echo "[$NAME] - Opening GDF and log files"
 # Open GDF and log files
-GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".gdf"
-LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)".log"
+GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.gdf"
+LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)
 cl_rpc openxdf $GDFBASENAME $LOGBASENAME "smrinc"
 
 echo "[$NAME] - Starting BCI process"
