@@ -106,7 +106,10 @@ echo "[$NAME] - Launching $feedback feedback"
 if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
 elif [ "$feedback" == "mi_python_control" ]; then
+	currpwd=$PWD
+	cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
 	$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
+	cd $currpwd
 	feedback=python
 	#echo "[$NAME] - Not implemented yet, shutting down"
 else
