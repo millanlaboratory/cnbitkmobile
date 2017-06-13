@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS = 	src/ \
-			extra/ \
-			gui/
+SUBDIRS = extra/ \
+	  gui/
+
+# Removed src/ for the time being (using python feedback)
 		  
 REMOVE_DISTDIR = \
    { test ! -d "$(distdir)" \
