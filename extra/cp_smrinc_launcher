@@ -19,7 +19,8 @@ usage(){
 miblock=$DEFAULT_MI_BLOCK
 mitask=$DEFAULT_MI_TASK
 feedback=$DEFAULT_FEEDBACK_EXECUTABLE
-tmp_python_feedback=/home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/feedback.py
+#tmp_python_feedback=/home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/feedback.py
+tmp_python_feedback=/home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/feedback.py
 icomponent="integrator"
 iname="type"
 
@@ -107,7 +108,8 @@ if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
 elif [ "$feedback" == "mi_python_control" ]; then
 	currpwd=$PWD
-	cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
+	#cd /home/ltonin/Git/Codes/cnbitk/cnbitkmobile/python/Feedback/
+	cd /home/cnbiadmin/git/cnbitk/cnbitkmobile/python/Feedback/
 	$(gnome-terminal -e "python $tmp_python_feedback -d $bcixml -t $mitask -b $miblock")
 	cd $currpwd
 	feedback=python
@@ -119,6 +121,10 @@ fi
 sleep 1
 pid=$(pidof $feedback) 
 echo "PID:" $pid
+
+echo "[$NAME] - Launching the GUI"
+smrinc_gui_parameters
+
 while [ $(pidof $feedback) > /dev/null ]; do
 	sleep 1
 done
