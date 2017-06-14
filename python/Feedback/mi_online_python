@@ -100,7 +100,7 @@ def centered_rect(image, s_center_x, s_center_y):
     return [s_center_x - width/2, s_center_y - height/2, width, height]
 
 
-def ptr_update(bci_val, cue=None, boom=None, hitrate=None):
+def ptr_update(bci_val0, cue=None, boom=None, hitrate=None):
     """draw pointer, rotated according to bci_val, cue in center, 
        if boom != None pointer changes color accordingly or in case of timeout
        text is shown below pointer
@@ -125,6 +125,7 @@ def ptr_update(bci_val, cue=None, boom=None, hitrate=None):
                        [int(s_center_x),int(s_center_y)], int(outer_radius), 0)
 
     #Rotate pointer according to bci value and change color if boom
+    bci_val = np.clip(bci_val0, l_thr, r_thr)
     rotation = - (2*bci_val - 1) * max_rotation
     if boom == None or boom == 'time out':
         new_pointer = pg.transform.rotate(pointer_grey, rotation)
@@ -413,7 +414,7 @@ def read_xml():
     else:
         sys.exit('ERROR: BCI probability does not correspond to given taskset')
     
-    #identify reset event
+    #identify GDF events
     global evtLeft, evtRight, evtRest, evtCFeed, evtHit, evtMiss, evtFix, evtOff
     try:
         evtLeft = int(xml.findtext('./tasks/{}/gdfevent'.format(left_task)), 16)
@@ -428,7 +429,7 @@ def read_xml():
         sys.exit('ERROR: cannot find all required event ids in XML file')
 
     #numbers of trials and list to indicate order of trials
-    global n_right, n_left, n_rest, n_tasks, tasks
+    global n_tasks, tasks
     try:
         n_right = int(xml.findtext('./online/{}/trials/{}'.format(block, right_task)))
         n_left = int(xml.findtext('./online/{}/trials/{}'.format(block, left_task)))
