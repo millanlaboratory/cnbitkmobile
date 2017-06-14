@@ -20,7 +20,7 @@ image_path = ''
 save_path = '/tmp/cnbitk-{}/'.format(user)
 filename = '{}{}{}.smrinc_parameters.txt'.format(
         date.tm_year, str(date.tm_mon).zfill(2), str(date.tm_mday).zfill(2))
-
+tempfile = os.path.join(save_path, filename)
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -29,10 +29,22 @@ if 'CNBITK_PYTHON_DATA' in os.environ:
 else:
     graphics_path = ''
 
+def on_closing():
+    """Rename file where values have been saved to"""
+    time = datetime.now().timetuple()
+    filename_old = '{}{}{}{}{}.smrinc_parameters_old.txt'.format(
+        time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
+        str(time.tm_hour).zfill(2), str(time.tm_min).zfill(2))
+    oldfile = os.path.join(save_path, filename_old)
+
+    if os.path.exists(tempfile):
+        os.rename(tempfile, oldfile)
+    
+    root.destroy()
 
 def save(param, *args):
     """Save changed parameter to file, include timestamp"""
-    file = open(save_path+filename, 'a')
+    file = open(tempfile, 'a')
     time = datetime.now().timetuple()
     file.write('[{}{}{}{}{}{}] type|integrator|task|{}|{}|{}\n'.format(
             time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
@@ -158,4 +170,5 @@ phi_saved['foreground']='#B6B6B4'
 for child in mainframe.winfo_children():
     child.grid_configure(padx=5, pady=5)
 
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
