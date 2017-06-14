@@ -30,7 +30,7 @@
 				<cue>1000.00</cue>
 				<cfeedback>4000.00</cfeedback>
 				<boom>1000.00</boom>
-				<timeout>3000.00</timeout>
+				<timeout>10000.00</timeout>
 			</trial>
 		</mi>
 	</protocol>
@@ -57,9 +57,9 @@
 			
 			<!-- New feedback trial configuration -->
 			<trials>
-				<mi_both_hands>2</mi_both_hands>
-				<mi_both_feet>2</mi_both_feet>
-				<mi_rest>2</mi_rest>
+				<mi_both_hands>10</mi_both_hands>
+				<mi_both_feet>10</mi_both_feet>
+				<mi_rest>10</mi_rest>
 			</trials>
 
 			<!-- New intergrator configuration -->			
@@ -77,8 +77,8 @@
 					<degree>8</degree>
 				</dynamic>
 				<vema>
-					<rho>0.5</rho>
-					<gamma>0.6</gamma>
+					<rho>0.9</rho>
+					<gamma>1.0</gamma>
 				</vema>
 			</integrator>	
 		</mi>
