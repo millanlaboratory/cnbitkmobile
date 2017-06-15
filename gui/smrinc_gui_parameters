@@ -9,25 +9,14 @@ Open a GUI for changing the parameters of the integrators and saves them to
 /tmp/cnbitk-$USER/$DATE.smrinc_parameters.txt
 """
 
+import argparse
 from Tkinter import *
 import ttk
+from lxml import etree as et
 from datetime import datetime
 import os
+import sys
 
-date = datetime.now().timetuple()
-user = os.environ['USER'] 
-image_path = ''
-save_path = '/tmp/cnbitk-{}/'.format(user)
-filename = '{}{}{}.smrinc_parameters.txt'.format(
-        date.tm_year, str(date.tm_mon).zfill(2), str(date.tm_mday).zfill(2))
-tempfile = os.path.join(save_path, filename)
-if not os.path.exists(save_path):
-    os.makedirs(save_path)
-
-if 'CNBITK_PYTHON_DATA' in os.environ:
-    graphics_path = os.environ['CNBITK_PYTHON_DATA']
-else:
-    graphics_path = ''
 
 def on_closing():
     """Rename file where values have been saved to"""
@@ -41,6 +30,7 @@ def on_closing():
         os.rename(tempfile, oldfile)
     
     root.destroy()
+    sys.exit()
 
 def save(param, *args):
     """Save changed parameter to file, include timestamp"""
@@ -59,19 +49,10 @@ def val_changed(param):
     parameters[param][0]['foreground'] = '#B6B6B4'
     parameters[param][1].state(['!disabled'])
 
+
 #Main window
 root = Tk()
 root.title('Enter parameters')
-
-ttk.Style().configure("TButton", font=('Lato', '10'))
-ttk.Style().configure("TLabel", font=('Helvetica', '10'))
-
-try:
-    icon = Image("photo", file=os.path.join(graphics_path, "cnbi_icon.gif"))
-    root.tk.call('wm','iconphoto',root._w,icon)
-except TclError:
-    pass
-
 
 #Initialize variables
 alpha=StringVar()
@@ -79,24 +60,74 @@ chi=StringVar()
 phi=StringVar()
 gamma=StringVar()
 rho=StringVar()
-alpha.set(0.97)
-phi.set(0.9)
-chi.set(1.0)
-gamma.set(1.0)
-rho.set(0.9)
+
+#Path for saving data
+date = datetime.now().timetuple()
+user = os.environ['USER'] 
+image_path = ''
+save_path = '/tmp/cnbitk-{}/'.format(user)
+filename = '{}{}{}.smrinc_parameters.txt'.format(
+        date.tm_year, str(date.tm_mon).zfill(2), str(date.tm_mday).zfill(2))
+tempfile = os.path.join(save_path, filename)
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
+
+#Path where graphics are stored
+if 'CNBITK_PYTHON_DATA' in os.environ:
+    graphics_path = os.environ['CNBITK_PYTHON_DATA']
+#If variable not set search locally
+else:
+    graphics_path = ''
+
+#Load graphics
+try:
+    cnbi_logo_img = PhotoImage(file=os.path.join(graphics_path, 'cnbi_logo.gif'))
+except TclError:
+    pass
+
+try:
+    icon = Image("photo", file=os.path.join(graphics_path, "cnbi_icon.gif"))
+    root.tk.call('wm','iconphoto',root._w,icon)
+except TclError:
+    pass
+
+#Parse path to XML file from argument
+parser = argparse.ArgumentParser()
+parser.add_argument('-x', help='path to XML file')
+args = parser.parse_args()
+xml_path = args.x
+if args.x == None:
+    sys.exit('ERROR: No path to XML file given')
+
+#Parse default values from XML file
+try:
+    xml = et.parse(xml_path).getroot()
+except IOError:
+    sys.exit('ERROR: XML file {} not found'.format(path))
+
+try:
+    alpha.set(float(xml.findtext('.//integrator/ema/alpha')))
+    phi.set(float(xml.findtext('.//integrator/dynamic/phi')))
+    chi.set(float(xml.findtext('.//integrator/dynamic/chi')))
+    gamma.set(float(xml.findtext('.//integrator/vema/gamma')))
+    rho.set(float(xml.findtext('.//integrator/vema/rho')))
+except TypeError:
+    sys.exit('ERROR: problem while determining default values from XML file')
+
+
+#Create actual GUI
+
+ttk.Style().configure("TButton", font=('Lato', '10'))
+ttk.Style().configure("TLabel", font=('Helvetica', '10'))
 
 mainframe = ttk.Frame(root, padding='3 3 12 12')
 mainframe.grid(column = 0,  row=0, sticky =(N, W, E, S))
 mainframe.columnconfigure(0, weight=1)
 mainframe.rowconfigure(0, weight=1)
 
-#Graphics
-try:
-    cnbi_logo_img = PhotoImage(file=os.path.join(graphics_path, 'cnbi_logo.gif'))
-    cnbi_logo = ttk.Label(mainframe, image=cnbi_logo_img)
-    cnbi_logo.grid(column=0, row=0, columnspan=4)
-except TclError:
-    pass
+#CNBI logo
+cnbi_logo = ttk.Label(mainframe, image=cnbi_logo_img)
+cnbi_logo.grid(column=0, row=0, columnspan=4)
 
 #EMA
 ttk.Label(mainframe, text='Exponential Smoothing').grid(row=1, columnspan=4, sticky=(NW))
