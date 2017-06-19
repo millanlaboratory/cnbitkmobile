@@ -16,9 +16,10 @@ from lxml import etree as et
 from datetime import datetime
 import os
 import sys
+import signal
 
 
-def on_closing():
+def on_closing(*args):
     """Rename file where values have been saved to"""
     time = datetime.now().timetuple()
     filename_old = '{}{}{}{}{}.smrinc_parameters_old.txt'.format(
@@ -201,5 +202,6 @@ phi_saved['foreground']='#B6B6B4'
 for child in mainframe.winfo_children():
     child.grid_configure(padx=5, pady=5)
 
+signal.signal(signal.SIGTERM, on_closing)
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
