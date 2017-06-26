@@ -116,7 +116,7 @@ pid=$(pidof $feedback)
 echo "PID:" $pid
 
 echo "[$NAME] - Launching the GUI"
-smrinc_gui_parameters &
+smrinc_gui_parameters -x $bcixml &
 
 while [ -n "$(ps -p $pid -o pid=)" ]; do
 	sleep 1
@@ -140,5 +140,5 @@ sleep 1
 
 # Close python gui
 echo "[$NAME] - Close python GUI"
-killall -9 python
+killall -15 python
 
