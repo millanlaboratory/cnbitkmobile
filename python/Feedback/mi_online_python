@@ -18,6 +18,8 @@ from pybci import key_logger as kl
 
 
 #Settings:
+t_timeout_ic = 20000
+
 #Rotation that corresponds to BCI value being 0 or 1 (in degrees)
 max_rotation = 90
 # Initial window height and width and coordinates of center
@@ -267,7 +269,7 @@ def cue_stage(cue):
     bci.sendTidEvent(evtCue+evtOff)
     return
             
-def feedback_stage(task, duration):
+def feedback_stage(task):
     """Show cue. Pointer indicates bci value. 
     Call boom_stage if right/left threshold reached, timeout if time out
     """
@@ -279,15 +281,15 @@ def feedback_stage(task, duration):
     #Get current time for determining time out later on
     time = pg.time.get_ticks()
     if task == 'rest':
-        IC_trial = False
+        duration = t_timeout_inc
     else:
-        IC_trial = True
+        duration = t_timeout_ic
     #Consume older messages
     while bci.readTicAllProb() != None :
         pass
     bci.sendTidEvent(evtCFeed)
     #Repeat until timeout or forever if IC_trial
-    while pg.time.get_ticks() - time < duration or IC_trial:
+    while pg.time.get_ticks() - time < duration:
         x = get_bci_val()
         if x == 'exit' :
             bci.sendTidEvent(evtCFeed+evtOff)
@@ -381,12 +383,12 @@ def read_xml():
         sys.exit('ERROR: taskset {} not found in XML file'.format(tskst))
     
     #durations
-    global t_fixation, t_cue, t_timeout, t_boom
+    global t_fixation, t_cue, t_timeout_inc, t_boom
     try:
         times = xml.find('./protocol/{}/trial'.format(block))
         t_fixation = float(times.findtext('fixation'))
         t_cue = float(times.findtext('cue'))
-        t_timeout = float(times.findtext('timeout'))
+        t_timeout_inc = float(times.findtext('timeout'))
         t_boom = float(times.findtext('boom'))
     except (AttributeError, TypeError):
         sys.exit('ERROR: problem while determining durations from XML file')
@@ -530,7 +532,7 @@ def feedback_routine():
         fixation_stage(tsk)
         print('\nTask {} of {}: {}'.format(count_tasks, n_tasks, tsk))
         cue_stage(tsk)
-        hit = feedback_stage(tsk, t_timeout)
+        hit = feedback_stage(tsk)
         if tsk != 'rest':
             count_ic_tasks += 1
             count_ic_hits += hit
