@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Created on Fri May  5 14:02:52 2017
@@ -538,6 +538,7 @@ def feedback_routine():
             count_ic_hits += hit
     if count_ic_tasks != 0:
         hit_rate = float(count_ic_hits)/float(count_ic_tasks)
+        print('IC success rate: {: .2%}'.format(hit_rate))
         ptr_update(0.5, hitrate=hit_rate)
     else:
         ptr_update(0.5)
