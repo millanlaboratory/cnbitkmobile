@@ -105,12 +105,13 @@ try
         exit;
     end
     
-	msg_thresholds_log = 'thresholds=(';
+	%msg_thresholds_log = 'thresholds=(';
     for t = 0:user.nTasks-1
-	    msg_thresholds_log = sprintf('%s %f', msg_thresholds_log, user.thresholds(t+1));
+        cl_updatelog(loop.cl, ['th_' num2str(user.tasklabel{t+1}) '=' num2str(user.thresholds(t+1))]);
+	    %msg_thresholds_log = sprintf('%s%f', msg_thresholds_log, user.thresholds(t+1));
     end
-	msg_thresholds_log = sprintf('%s )', msg_thresholds_log);
-	cl_updatelog(loop.cl, msg_thresholds_log);
+	%msg_thresholds_log = sprintf('%s)', msg_thresholds_log);
+	
 
 	% -------------------------------------------------------------- %
 	% User EEG data configuration                                    %
