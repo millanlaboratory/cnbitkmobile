@@ -106,12 +106,12 @@ if [ "$feedback" == "mi_control" ]; then
 	$(gnome-terminal -e $feedback) 
 elif [ "$feedback" == "mi_online_python" ]; then
 	$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
-	feedback=python
+	feedback=python2
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
 
-sleep 1
+sleep 2
 pid=$(pidof $feedback) 
 echo "PID:" $pid
 
