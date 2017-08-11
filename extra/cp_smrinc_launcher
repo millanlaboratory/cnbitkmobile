@@ -100,28 +100,31 @@ BCIPID=$(cl_init -x $bcixml -scN -B $miblock -T $mitask)
 
 sleep 2
 
+echo "[$NAME] - Launching the GUI"
+smrinc_gui_parameters -x $bcixml &
+
 # Launch feedback mi_control
 echo "[$NAME] - Launching $feedback feedback"
 if [ "$feedback" == "mi_control" ]; then
-	$(gnome-terminal -e $feedback) 
+	#$(gnome-terminal -e $feedback) 
+	$feedback
 elif [ "$feedback" == "mi_online_python" ]; then
-	$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
-	feedback=python2
+	#$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
+	#feedback=python2
+	$feedback -x $bcixml -t $mitask -b $miblock
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
 
-sleep 2
-pid=$(pidof $feedback) 
-echo "PID:" $pid
-
-echo "[$NAME] - Launching the GUI"
-smrinc_gui_parameters -x $bcixml &
-
-while [ -n "$(ps -p $pid -o pid=)" ]; do
-	sleep 1
-done
-sleep 2
+#sleep 2
+#pid=$(pidof $feedback) 
+#echo "PID:" $pid
+#
+#
+#while [ -n "$(ps -p $pid -o pid=)" ]; do
+#	sleep 1
+#done
+#sleep 2
 
 # Close the GDF file
 echo "[$NAME] - Closing GDF file"
