@@ -76,7 +76,7 @@ try
     end
     integrator.filepath = ['/tmp/cnbitk-' getenv('USER') '/' datestr(now,'yyyymmdd') '.smrinc_parameters.txt'];
     
-    % Updating log file with integrator
+    % Updating log file with integrator type and default parameters (from XML)
     cl_updatelog(loop.cl, sprintf('integrator=%s', integrator.type));
     try 
         switch (integrator.type)
@@ -88,6 +88,7 @@ try
                 integrator = smrinc_integrator_xmlparam_dynamic(loop.cfg.config, integrator);
                 integrator.coeff = smrinc_integrator_forceprofile(integrator.param.inclim, integrator.param.nrpt, integrator.param.bias, integrator.param.degree);   
                 cl_updatelog(loop.cl, sprintf('phi=%f',    integrator.param.phi));
+                cl_updatelog(loop.cl, sprintf('chi=%f',    integrator.param.chi));
                 cl_updatelog(loop.cl, sprintf('bias=%f',   integrator.param.bias));
                 cl_updatelog(loop.cl, sprintf('inc=%f',    integrator.param.inclim));
                 cl_updatelog(loop.cl, sprintf('nrpt=%f',   integrator.param.nrpt));
