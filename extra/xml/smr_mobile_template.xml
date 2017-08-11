@@ -63,7 +63,7 @@
 			</trials>
 		</mi>
 	</online>
-
+	
 	<!-- New intergrator configuration -->			
 	<integrator>
 		<ema>
@@ -88,9 +88,10 @@
 	<device>
 		<ndf>
 			<ic>/ctrl2</ic>
-			<gdfevent>0x0580</gdfevent>
+			<label>0x0580</label>
 		</ndf>
 	</device>
+
 	<!-- Classifiers Block -->
 	<classifier>
 		<kmi0>
@@ -109,7 +110,7 @@
 				<idfamily>FamilyBiosig</idfamily>
 			</tobi>
 			<ndf>
-				<exec>ndf_smrinc</exec>
+				<exec>ndf_smr_mobile</exec>
 				<pipe>/pipe1</pipe>
 				<id>/bus</id>
 				<ic>/ctrl1</ic>

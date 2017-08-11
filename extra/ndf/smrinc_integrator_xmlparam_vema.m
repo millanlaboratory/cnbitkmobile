@@ -1,7 +1,7 @@
 function integrator = smrinc_integrator_xmlparam_vema(config, integrator)
     
-    xml_path_rho   = 'online/mi/integrator/vema/rho';
-    xml_path_gamma = 'online/mi/integrator/vema/gamma';
+    xml_path_rho   = 'integrator/vema/rho';
+    xml_path_gamma = 'integrator/vema/gamma';
     
     % Getting alpha parameter
     ccfg_root(config);

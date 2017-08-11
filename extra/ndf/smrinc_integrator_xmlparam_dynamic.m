@@ -6,12 +6,12 @@ function integrator = smrinc_integrator_xmlparam_dynamic(config, integrator)
     DEFAULT_NRPT   = 0.8;
     DEFAULT_DEGREE = 8;
     
-    xml_path_phi    = 'online/mi/integrator/dynamic/phi';
-    xml_path_chi    = 'online/mi/integrator/dynamic/chi';
-    xml_path_bias   = 'online/mi/integrator/dynamic/bias';
-    xml_path_inclim = 'online/mi/integrator/dynamic/inc';
-    xml_path_nrpt   = 'online/mi/integrator/dynamic/noreturn';
-    xml_path_degree = 'online/mi/integrator/dynamic/degree';
+    xml_path_phi    = 'integrator/dynamic/phi';
+    xml_path_chi    = 'integrator/dynamic/chi';
+    xml_path_bias   = 'integrator/dynamic/bias';
+    xml_path_inclim = 'integrator/dynamic/inc';
+    xml_path_nrpt   = 'integrator/dynamic/noreturn';
+    xml_path_degree = 'integrator/dynamic/degree';
     
     % Getting phi parameter
     ccfg_root(config);

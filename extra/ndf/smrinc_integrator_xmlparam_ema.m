@@ -1,7 +1,7 @@
 function integrator = smrinc_integrator_xmlparam_ema(config, integrator)
     
-    xml_path_alpha     = 'online/mi/integrator/ema/alpha';
-    xml_path_rejection = 'online/mi/integrator/ema/rejection';
+    xml_path_alpha     = 'integrator/ema/alpha';
+    xml_path_rejection = 'integrator/ema/rejection';
     
     % Getting alpha parameter
     ccfg_root(config);
