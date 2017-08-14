@@ -92,6 +92,14 @@
 			<ic>/ctrl2</ic>
 			<label>0x0580</label>
 		</ndf>
+		<gdfevents>
+			<ros_start>0x6301</ros_start>
+			<ros_stop>0x6302</ros_stop>\
+			<ros_left>0x6305</ros_left>
+			<ros_right>0x6304</ros_right>
+			<ros_resume>0x6308</ros_resume>
+			<ros_pause>0x6309</ros_pause>
+		</gdfevents>
 	</device>
 
 	<!-- Classifiers Block -->
