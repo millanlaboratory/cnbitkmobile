@@ -115,6 +115,15 @@ cl_rpc storeconfig $icomponent $iname $itype
 echo "[$NAME] - Uploading control parameters to nameserver"
 cl_rpc storeconfig $ccomponent $cname $ctype
 
+# Re-set ic pipe for the device
+device_ip=$(ccfg_getstring -x $bcixml -p device/ip)
+device_port=$(ccfg_getint -x $bcixml -p device/ndf/port)
+device_ic=$(ccfg_getstring -x $bcixml -p device/ndf/ic)
+
+echo "[$NAME] - Set device connection: $device_ip:$device_port ($device_ic)"
+cl_rpc unset $device_ic
+cl_rpc set $device_ic $device_ip:$device_port
+
 echo "[$NAME] - Opening GDF and log files"
 # Open GDF and log files
 GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.gdf"
@@ -141,16 +150,6 @@ elif [ "$feedback" == "mi_online_python" ]; then
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
-
-#sleep 2
-#pid=$(pidof $feedback) 
-#echo "PID:" $pid
-#
-#
-#while [ -n "$(ps -p $pid -o pid=)" ]; do
-#	sleep 1
-#done
-#sleep 2
 
 # Close the GDF file
 echo "[$NAME] - Closing GDF file"
