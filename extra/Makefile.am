@@ -2,6 +2,7 @@ PACKAGE_NAME = @PACKAGE_NAME@
 
 protocolmatdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/ndf
 protocolmat_DATA = 	ndf/ndf_smrinc.m \
+					ndf/ndf_smr_mobile.m \
 		      		ndf/ndf_smrinc_include.m	\
 		      		ndf/smrinc_integrator_dynamic.m \
 			  		ndf/smrinc_integrator_ema.m \
@@ -13,7 +14,8 @@ protocolmat_DATA = 	ndf/ndf_smrinc.m \
 
 protocolxmldir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/xml
 protocolxml_DATA = xml/smrinc_template.xml \
+				   xml/smr_mobile_template.xml \
 				   ndf/CLASSIFIER.mat
 
-bin_SCRIPTS = cp_smrinc_launcher
+bin_SCRIPTS = cp_smrinc_launcher cp_smrmobile_launcher
 

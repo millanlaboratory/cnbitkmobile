@@ -1,0 +1,174 @@
+#!/bin/bash
+
+NAME="cp_smrmobile_launcher"
+
+DEFAULT_MI_BLOCK="mi"
+DEFAULT_MI_TASK="mi_bhbf"
+
+DEFAULT_FEEDBACK_EXECUTABLE="mi_online_python"
+
+usage(){
+	printf "\n[$NAME] - Usage: $NAME -x XMLPATH -c|-d [OPTION]...\n\n"
+	printf "	-x 		path of the xml file\n"
+	printf "	-c 		continous mobile control\n"
+	printf "	-d 		discrete mobile control\n"
+	printf "	-i 		integrator type [ema, dynamic, vema]\n"
+	printf "	-b 		experiment block 	[Default: 'mi']\n"
+	printf "	-t 		experiment taskset 	[Default: 'mi_bhbf']\n"
+	printf "	-e 		Feedback executable [Default: 'mi_online_python']\n"
+}
+
+miblock=$DEFAULT_MI_BLOCK
+mitask=$DEFAULT_MI_TASK
+feedback=$DEFAULT_FEEDBACK_EXECUTABLE
+icomponent="integrator"
+iname="type"
+ccomponent="control"
+cname="type"
+ctype=""
+
+xflag=false
+iflag=false
+cflag=false
+
+# Getting optional arguments
+while getopts ":t:b:x:i:e:dc" opt; do
+	case $opt in
+		t)
+			mitask=$OPTARG
+
+			;;
+		b)
+			miblock=$OPTARG
+			;;
+		x)
+			bcixml=$OPTARG
+			xflag=true;
+			;;
+		i)
+			itype=$OPTARG
+			iflag=true;
+			;;
+		e)
+			feedback=$OPTARG
+			;;
+		c)
+			ctype="continuous"
+			cflag=true
+			;;
+		d)
+			ctype="discrete"
+			cflag=true
+			;;
+		\?)
+			echo "[$NAME] - Invalid option: -$OPTARG" >&2
+			usage;
+			exit 1
+			;;
+		:)
+			echo "[$NAME] - Option -$OPTARG requires an argument.">&2
+			usage;
+			exit 1
+			;;
+	esac
+done
+
+if ! $xflag 
+then
+	echo "[$NAME] - XML filepath must be provided (-x XMLPATH)" >&2
+	usage;
+    exit 1
+fi
+
+if ! $iflag 
+then
+	echo "[$NAME] - integrator type must be provided (-i {ema, dynamic, vema})" >&2
+	usage;
+    exit 1
+fi
+
+if ! $cflag
+then
+	echo "[$NAME] - control type must be provided (-c|-d)" >&2
+	usage;
+    exit 1
+fi
+
+
+echo "[$NAME] - BCI xml:  	 $bcixml"
+echo "[$NAME] - MI block: 	 $miblock"
+echo "[$NAME] - MI task:  	 $mitask"
+echo "[$NAME] - Integrator:  $itype"
+echo "[$NAME] - Feedback:  	 $feedback"
+echo "[$NAME] - Control:  	 $ctype"
+
+
+# Upload all parameters to nameserver and start BCI processing
+echo "[$NAME] - Uploading XML parameters to nameserver"
+cl_init -x $bcixml -lN -B $miblock -T $mitask
+
+# Upload integrator type parameter
+echo "[$NAME] - Uploading integrator parameters to nameserver"
+cl_rpc storeconfig $icomponent $iname $itype
+
+# Upload control type parameter
+echo "[$NAME] - Uploading control parameters to nameserver"
+cl_rpc storeconfig $ccomponent $cname $ctype
+
+echo "[$NAME] - Opening GDF and log files"
+# Open GDF and log files
+GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.gdf"
+LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)
+cl_rpc openxdf $GDFBASENAME $LOGBASENAME "smrinc"
+
+echo "[$NAME] - Starting BCI process"
+BCIPID=$(cl_init -x $bcixml -scN -B $miblock -T $mitask)
+
+sleep 2
+
+echo "[$NAME] - Launching the GUI"
+smrinc_gui_parameters -x $bcixml &
+
+# Launch feedback mi_control
+echo "[$NAME] - Launching $feedback feedback"
+if [ "$feedback" == "mi_control" ]; then
+	#$(gnome-terminal -e $feedback) 
+	$feedback
+elif [ "$feedback" == "mi_online_python" ]; then
+	#$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
+	#feedback=python2
+	$feedback -x $bcixml -t $mitask -b $miblock
+else
+	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
+fi
+
+#sleep 2
+#pid=$(pidof $feedback) 
+#echo "PID:" $pid
+#
+#
+#while [ -n "$(ps -p $pid -o pid=)" ]; do
+#	sleep 1
+#done
+#sleep 2
+
+# Close the GDF file
+echo "[$NAME] - Closing GDF file"
+cl_rpc closexdf
+sleep 1
+
+# Terminate MATLAB prcesses
+echo "[$NAME] - Terminating BCI process"
+cl_rpc terminate $BCIPID
+sleep 1
+
+# Unload configuration from nameserver
+echo "[$NAME] - Unload configuration from nameserver"
+cl_rpc eraseconfig $icomponent $iname
+cl_rpc eraseconfig $ccomponent $cname
+sleep 1
+
+# Close python gui
+echo "[$NAME] - Close python GUI"
+killall -15 python
+
