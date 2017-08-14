@@ -30,7 +30,7 @@ test_engine_LDADD = -lcnbicore -ldrawtk -lcnbimobile
 test_control_SOURCES = test_control.cpp
 test_control_LDADD = -lcnbicore -ldrawtk -lcnbimobile
 
-bin_PROGRAMS = mi_mobile_feedback mi_integrator
+bin_PROGRAMS = mi_mobile_feedback mi_integrator mi_mano_offline
 
 mi_mobile_feedback_SOURCES = mi_mobile_feedback.cpp
 mi_mobile_feedback_LDADD = -lcnbicore -lcnbiloop -ltobicore \
