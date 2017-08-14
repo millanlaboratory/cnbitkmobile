@@ -86,7 +86,9 @@
 
 	<!-- Device configuration -->
 	<device>
+		<ip>192.168.1.10</ip>
 		<ndf>
+			<port>9502</port>
 			<ic>/ctrl2</ic>
 			<label>0x0580</label>
 		</ndf>
