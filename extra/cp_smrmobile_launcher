@@ -5,7 +5,7 @@ NAME="cp_smrmobile_launcher"
 DEFAULT_MI_BLOCK="mi"
 DEFAULT_MI_TASK="mi_bhbf"
 
-DEFAULT_FEEDBACK_EXECUTABLE="mi_online_python"
+DEFAULT_FEEDBACK_EXECUTABLE="mi_mobile_python"
 
 usage(){
 	printf "\n[$NAME] - Usage: $NAME -x XMLPATH -c|-d [OPTION]...\n\n"
@@ -144,6 +144,10 @@ if [ "$feedback" == "mi_control" ]; then
 	#$(gnome-terminal -e $feedback) 
 	$feedback
 elif [ "$feedback" == "mi_online_python" ]; then
+	#$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
+	#feedback=python2
+	$feedback -x $bcixml -t $mitask -b $miblock
+elif [ "$feedback" == "mi_mobile_python" ]; then
 	#$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
 	#feedback=python2
 	$feedback -x $bcixml -t $mitask -b $miblock
