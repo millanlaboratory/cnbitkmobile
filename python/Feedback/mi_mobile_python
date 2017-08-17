@@ -74,6 +74,7 @@ def get_bci_val():
         prob = bci.readTicClassProb(block, task_event)
         if prob != None:
             #Correct if probability for left task is being received
+            #print(prob)
             if bci_inverse:
                 prob = 1-prob
             return prob
@@ -88,7 +89,7 @@ def get_bci_class():
         #Obtain probability from TiC
         out = bci.readTicAllProb()
         if out != None:
-            print('Successfull')
+            print('Class for obtaining probabilities: {}'.format(out[0][:]))
             return out[0]
 
 
@@ -133,16 +134,15 @@ def ptr_update(bci_val0, boom=None):
     rotation = - (2*bci_val - 1) * max_rotation
     if boom == None: #or boom == 'time out':
         new_pointer = pg.transform.rotate(pointer_grey, rotation)
-        if robot_moving:
-            state = 'forward'
-        else:
-            state = 'stop'
+        state = 'forward'
     elif boom == 'left':
         new_pointer = pg.transform.rotate(pointer_blue, rotation)
         state = 'left'
     elif boom == 'right':
         new_pointer = pg.transform.rotate(pointer_red, rotation)   
-        state = 'right'     
+        state = 'right' 
+    if not robot_moving:
+        state = 'stop'    
     #Determine rect (position and size) of pointer and draw it
     new_rect = centered_rect(new_pointer, s_center_x, s_center_y)
     screen.blit(new_pointer, new_rect)
@@ -343,6 +343,7 @@ def read_xml():
         bci_inverse = False
     elif bci_task == left_task:
         bci_inverse = True
+        print("Class corresponds to left task - BCI probabilities will be inverted")
     else:
         sys.exit('ERROR: BCI probability does not correspond to given taskset')
     
@@ -385,7 +386,7 @@ def initialize_program():
     
     if 'CNBITK_PYTHON_DATA' in os.environ:
         graphics_path = os.environ['CNBITK_PYTHON_DATA']
-        print('looking for graphics in {}'.format(graphics_path))
+        print('Looking for graphics in {}'.format(graphics_path))
     else:
         print('CNBITK_PYTHON_DATA not defined - looking for graphics locally')
         graphics_path = 'graphics'
