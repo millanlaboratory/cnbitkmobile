@@ -59,25 +59,27 @@ if args.b == None:
 
 #Functions for communication with BCI loop    
 
-def get_bci_val():
-    """ determine the current (integrated) bci output from TiC"""
 
+def get_bci_val():
     if not go_on or not pg.display.get_init():
         return    
  
-    while go_on:
-        #If handle_events()returns something it is a command to change flow of program and gets passed on to feedback_stage
-        event=handle_events()
-        if event != None:
-            return event
-        #Obtain probability from TiC
+    while True:
+        """
+        if handle_events() == 'exit':
+            return 'exit'
+        elif handle_events() == '0':
+            return 0.
+        elif handle_events() == '1':
+            return 1.
+        """
         prob = bci.readTicClassProb(block, task_event)
         if prob != None:
             #Correct if probability for left task is being received
-            #print(prob)
             if bci_inverse:
                 prob = 1-prob
             return prob
+
 
 def get_bci_class():
     """determine task that is being sent via TiC
@@ -89,7 +91,7 @@ def get_bci_class():
         #Obtain probability from TiC
         out = bci.readTicAllProb()
         if out != None:
-            print('Class for obtaining probabilities: {}'.format(out[0][:]))
+            print('Successfull - Will read BCI probabilities for class {}'.format(out[0][:]))
             return out[0]
 
 
@@ -104,7 +106,7 @@ def centered_rect(image, s_center_x, s_center_y):
 
 
 #def ptr_update(bci_val0, cue=None, boom=None, hitrate=None):
-def ptr_update(bci_val0, boom=None):
+def ptr_update(bci_val0, boom=None, task=None):
     """draw pointer, rotated according to bci_val, cue in center, 
        if boom != None pointer changes color accordingly or in case of timeout
        text is shown below pointer
@@ -141,8 +143,10 @@ def ptr_update(bci_val0, boom=None):
     elif boom == 'right':
         new_pointer = pg.transform.rotate(pointer_red, rotation)   
         state = 'right' 
+
     if not robot_moving:
         state = 'stop'    
+
     #Determine rect (position and size) of pointer and draw it
     new_rect = centered_rect(new_pointer, s_center_x, s_center_y)
     screen.blit(new_pointer, new_rect)
@@ -171,8 +175,13 @@ def ptr_update(bci_val0, boom=None):
     #Outer black ring to reduce flickering
     screen.blit(ring, centered_rect(ring, s_center_x, s_center_y))
 
-    #State
-    screen.blit(state_dict[state], centered_rect(state_dict[state], s_center_x, s_center_y))
+    if task != None:
+        text_font = pg.font.SysFont('lato', 70)
+        text_surface = text_font.render('Task {}'.format(task), False, light_grey)
+        screen.blit(text_surface, centered_rect(text_surface, s_center_x, s_center_y))
+    else:
+        #State
+        screen.blit(state_dict[state], centered_rect(state_dict[state], s_center_x, s_center_y))
 
     pg.display.update()
 
@@ -182,13 +191,17 @@ def ptr_update(bci_val0, boom=None):
 #functions that the program goes through during the trials
 
 #def boom_stage(bci_val, cue, boom_type):
-def boom_stage(bci_val, boom_type):
+def boom_stage(bci_val, boom_type,mode):
     """call ptr_update to draw pointer in boom, wait for given time"""
- 
+    
     if not go_on or not pg.display.get_init():
         return
+    if mode != 'in_trial':
+        t = 500
+    else:
+        t = t_boom
     time = pg.time.get_ticks()
-    while pg.time.get_ticks() - time < t_boom:
+    while pg.time.get_ticks() - time < t:
         if handle_events() == 'exit':
             #bci.sendTidEvent(evt+evtOff)
             return
@@ -197,54 +210,40 @@ def boom_stage(bci_val, boom_type):
     return
 
 
-def feedback_stage():
-    """Pointer indicates bci value. 
-    Call boom_stage if right/left threshold reached
-    """
- 
-    if not go_on or not pg.display.get_init():
-        return 0
-
-    ptr_update(0.5)
-
-    #Consume older messages
-    while bci.readTicAllProb() != None :
-        pass
-    bci.sendTidEvent(evtCFeed)
-    print('send: ', evtCFeed+evtOff)
-    #Repeat until timeout or forever if IC_trial
-    while go_on:
+def feedback_update(mode='in_trial', task=None, control=None):
+    """Update the pointer that indicates BCI value, 
+        pass on events from handle_events() if necessary
+        enter boom stage if threshold reached
+        return continue if no special event happens"""
+    if control == None:
         x = get_bci_val()
-        if x == 'exit' :
-            bci.sendTidEvent(evtCFeed+evtOff)
-            print('send: ', evtCFeed+evtOff)
-            return
-        elif x == 'startstop':
-            global robot_moving
-            if robot_moving:
-                bci.sendTidEvent(evtCmdPause)
-            else:
-                bci.sendTidEvent(evtCmdResume)
-            robot_moving = not robot_moving
-        else:
-            ptr_update(x)
-            #When threshold passed during left/right task - boom 
-            if x >= r_thr:
-                bci.sendTidEvent(evtCFeed+evtOff)
-                print('send: ', evtCFeed+evtOff)
-                print('right threshold reached')
-                bci.sendTidEvent(evtCmdRgt)
-                print('send: ', evtCmdRgt)
-                boom_stage(x, 'right')
-                return
-            elif x <= l_thr:
-                bci.sendTidEvent(evtCFeed+evtOff)
-                print('send: ', evtCFeed+evtOff)
-                print('left threshold reached')
-                bci.sendTidEvent(evtCmdLft)
-                print('send: ', evtCmdLft)
-                boom_stage(x, 'left')
-                return
+    else: x = float(control)
+    
+    if mode == 'cue':
+        ptr_update(x, task=task)
+    else:
+        ptr_update(x)
+
+    #When threshold passed during left/right task - boom 
+    global feedback_running
+    if x >= r_thr:
+        bci.sendTidEvent(evtCFeed+evtOff)
+        feedback_running = False
+        print('right threshold reached')
+        if mode == 'in_trial':
+            bci.sendTidEvent(evtCmdRgt)
+        boom_stage(x, 'right', mode)
+        return #'right'
+    elif x <= l_thr:
+        bci.sendTidEvent(evtCFeed+evtOff)
+        feedback_running = False
+        print('left threshold reached')
+        if  mode =='in_trial':
+            bci.sendTidEvent(evtCmdLft)
+        boom_stage(x, 'left',mode)
+        return #'left'
+    else:
+        return #'continue'
 
 
 def make_window(width, height, bci_val, boom=None):
@@ -268,7 +267,7 @@ def fullscreen(bci_val, boom=None):
 
 def handle_events():
     """change window or exit program if requested"""
-    global go_on
+    global go_on    
     if not pg.display.get_init():
         go_on = False
         return 'exit'
@@ -281,6 +280,11 @@ def handle_events():
             go_on = False
             pg.quit()
             return 'exit'
+        #Number for choosing task
+        elif event.type == pg.KEYDOWN and event.key in number_events[:n_tasks]:
+            for i in range(n_tasks):
+                if event.key == number_events[i]:
+                    return i+1
         #Change window size
         elif event.type == pg.VIDEORESIZE:
             w, h = event.size
@@ -290,14 +294,15 @@ def handle_events():
         elif event.type == pg.KEYDOWN and event.key == pg.K_f:
             fullscreen(0.5, None)
             return None
-        #simulate bci value 0 or 1
-        elif event.type == pg.KEYDOWN and event.key == pg.K_v:
-            return 0
-        elif event.type == pg.KEYDOWN and event.key == pg.K_b:
-            return 1
-        #Start/stop robot
+        #End trial, make robot pause
         elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-            return 'startstop'
+            return 'end trial'
+        #Simulate bci value 0 or 1
+        elif event.type == pg.KEYDOWN and event.key == pg.K_v:
+            return '0'
+        elif event.type == pg.KEYDOWN and event.key == pg.K_b:
+            return '1'
+
 
 
 def read_xml():    
@@ -316,10 +321,11 @@ def read_xml():
         sys.exit('ERROR: taskset {} not found in XML file'.format(tskst))
     
     #durations
-    global t_boom
+    global t_boom, t_cue
     try:
         times = xml.find('./protocol/{}/trial'.format(block))
         t_boom = float(times.findtext('boom'))
+        t_cue = float(times.findtext('cue'))
     except (AttributeError, TypeError):
         sys.exit('ERROR: problem while determining durations from XML file')
     
@@ -347,8 +353,8 @@ def read_xml():
     else:
         sys.exit('ERROR: BCI probability does not correspond to given taskset')
     
-    #identify GDF events
-    global evtCmdLft, evtCmdRgt, evtCmdStart, evtCmdStop, evtCmdResume, evtCmdPause, evtCFeed, evtOff
+    #identify GDF events and no of trials
+    global evtCmdLft, evtCmdRgt, evtCmdStart, evtCmdStop, evtCmdResume, evtCmdPause, evtCFeed, evtTask0, evtOff, n_tasks
     try:
         evtCmdLft = int(xml.findtext('./device/gdfevents/ros_left'), 16)
         evtCmdRgt = int(xml.findtext('./device/gdfevents/ros_right'), 16)
@@ -357,7 +363,9 @@ def read_xml():
         evtCmdPause = int(xml.findtext('./device/gdfevents/ros_pause'), 16)
         evtCmdResume = int(xml.findtext('./device/gdfevents/ros_resume'), 16)
         evtCFeed = int(xml.findtext('./events/gdfevents/cfeedback'), 16)
+        evtTask0 = int(xml.findtext('./online/{}/trials/gdfevent_task0'.format(block)), 16)
         evtOff = int(xml.findtext('./events/gdfevents/off'), 16)
+        n_tasks = int(xml.findtext('./online/{}/trials/n_tasks'.format(block)), 16)
     except TypeError:
         sys.exit('ERROR: cannot find all required event ids in XML file')
 
@@ -374,12 +382,12 @@ def read_xml():
 def initialize_program():
     """Initialize keylogger object, list with trials and pygame, open window"""
     pg.init()
+    #list of keyboard events that correspond to entering a number
+    global number_events
+    number_events = [pg.K_1,pg.K_2,pg.K_3,pg.K_4,pg.K_5,pg.K_6,pg.K_7,pg.K_8,pg.K_9]
     #Ignore mouse motion and clicks
     pg.event.set_blocked((pg.MOUSEBUTTONUP, pg.MOUSEBUTTONDOWN, pg.MOUSEMOTION))
     print('Pygame initialized')
-
-    global robot_moving
-    robot_moving = False
 
     #Load images
     global pointer_grey, pointer_red, pointer_blue, ring #, text_timeout
@@ -416,32 +424,112 @@ def initialize_program():
     pg.display.set_icon(cnbi_icon)
     make_window(s_width, s_height, 0.5, None)
 
+def empty_bci_stack():
+    """consume stack of old BCI TiC values, reset feedback to 0.5
+    Should be called directly before feedback is activated"""
+    if not feedback_running:
+        while bci.readTicAllProb() != None :
+            pass
+        bci.sendTidEvent(evtCFeed)
+        global feedback_running
+        feedback_running = True
+
+
+
+def wait_for_commnand():
+    print("Enter number between 1 and {} to choose task".format(n_tasks))
+    while go_on: 
+        empty_bci_stack()
+        command = handle_events()
+        if command in range(1,1+n_tasks) or command == 'exit':
+            return command
+        elif command in ['0', '1']:
+            feedback_update(mode='before_trial', control=command)
+        else:
+            feedback_update(mode='before_trial')
+
+def prepare_for_trial(command):
+    """If a number is pressed, feedback is reset to 0.5, event to start robot sent after t_cue"""
+    print("Trial with task {} will start in {}ms.".format(command, t_cue))
+    time = pg.time.get_ticks()
+    #'Cue'-stage where number is shown and robot does not move yet
+    while (pg.time.get_ticks() - time < t_cue):
+        empty_bci_stack()
+        command0 = handle_events()
+        if command0 == 'exit':
+            return 'exit'
+        elif command0 == 'end trial':
+            print("Interrupted - won't start trial")
+            return 'end trial'
+        elif command0 in ['0', '1']:
+            feedback_update(mode='cue', task=command, control=command0)
+        else:
+            feedback_update(mode='cue', task=command)
+    return 'go on'
+
+def trial_stage():
+    print('Trial starts')
+    while go_on:
+        if not feedback_running:
+            empty_bci_stack()
+        command1 = handle_events()
+        if command1 == 'exit':
+            return 'exit'
+        elif command1 == 'end trial':
+            print('Trial ended')
+            return 'end trial'
+        elif command1 in ['0', '1']:
+            feedback_update(mode='in_trial', control=command1)
+        else:
+            feedback_update(mode='in_trial')
+
+
 
 def main():
-    global go_on, app, bci
+
+    global go_on, app, bci, robot_moving, feedback_running
     go_on = True
+    #feedback_running indicates if evtCfeed has been sent before or evtCfeed+evtOff so that they always alternate
+    feedback_running = False
+    robot_moving = False
+
     app = kl.QtGui.QApplication(kl.sys.argv)
     #Initialize KeyLogger object to communicate with BCI
     try:
         bci = kl.KeyLogger()
     except:
         sys.exit('ERROR: could not connect to BCI loop')  
-    
+
     read_xml()
     initialize_program()
     
-    #Wait until space bar is pressed
-    print('Ready. Press space bar to continue')
-    while go_on:
-        if handle_events() == 'startstop':
-            break
-        if handle_events() == 'exit':
+    while go_on:    
+        empty_bci_stack()
+        command = wait_for_commnand()
+        if feedback_running:
+            bci.sendTidEvent(evtCFeed+evtOff)
+        feedback_running = False
+        if command == 'exit':
             return
-    while go_on:
-        feedback_stage()
-   
-    bci.sendTidEvent(evtCmdStop)
-            
+        next_step = prepare_for_trial(command)
+        if next_step == 'exit':
+            return
+        elif next_step == 'end trial':
+            continue
+
+        #Actual trial will start
+        bci.sendTidEvent(evtTask0+command)
+        robot_moving = True
+        bci.sendTidEvent(evtCmdResume)
+        if trial_stage() == 'exit':
+            return
+        else:
+            bci.sendTidEvent(evtCmdPause)
+            robot_moving = False
+            if feedback_running:
+                bci.sendTidEvent(evtCFeed+evtOff)
+            feedback_running = False
+
 
 #call main function
 if __name__ == '__main__': main()

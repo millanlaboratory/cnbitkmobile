@@ -57,9 +57,9 @@
 			
 			<!-- New feedback trial configuration -->
 			<trials>
-				<mi_both_hands>10</mi_both_hands>
-				<mi_both_feet>10</mi_both_feet>
-				<mi_rest>10</mi_rest>
+				<gdfevent_task0>0x6600</gdfevent_task0>
+				<n_tasks>6</n_tasks>
+				<repetitions>2</repetitions>
 			</trials>
 		</mi>
 	</online>
@@ -86,7 +86,7 @@
 
 	<!-- Device configuration -->
 	<device>
-		<ip>192.168.1.10</ip>
+		<ip>127.0.0.1</ip>
 		<ndf>
 			<port>9502</port>
 			<ic>/ctrl2</ic>
