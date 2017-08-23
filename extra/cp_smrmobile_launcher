@@ -6,6 +6,7 @@ DEFAULT_MI_BLOCK="mi"
 DEFAULT_MI_TASK="mi_bhbf"
 
 DEFAULT_FEEDBACK_EXECUTABLE="mi_mobile_python"
+DEFAULT_IP_LOOP="127.0.0.1"
 
 usage(){
 	printf "\n[$NAME] - Usage: $NAME -x XMLPATH -c|-d [OPTION]...\n\n"
@@ -16,11 +17,13 @@ usage(){
 	printf "	-b 		experiment block 	[Default: 'mi']\n"
 	printf "	-t 		experiment taskset 	[Default: 'mi_bhbf']\n"
 	printf "	-e 		Feedback executable [Default: 'mi_online_python']\n"
+	printf "	-a 		Loop ip [Default: '127.0.0.1']\n"
 }
 
 miblock=$DEFAULT_MI_BLOCK
 mitask=$DEFAULT_MI_TASK
 feedback=$DEFAULT_FEEDBACK_EXECUTABLE
+iploop=$DEFAULT_IP_LOOP
 icomponent="integrator"
 iname="type"
 ccomponent="control"
@@ -32,7 +35,7 @@ iflag=false
 cflag=false
 
 # Getting optional arguments
-while getopts ":t:b:x:i:e:dc" opt; do
+while getopts ":t:b:x:i:e:a:dc" opt; do
 	case $opt in
 		t)
 			mitask=$OPTARG
@@ -51,6 +54,9 @@ while getopts ":t:b:x:i:e:dc" opt; do
 			;;
 		e)
 			feedback=$OPTARG
+			;;
+		a)
+			iploop=$OPTARG
 			;;
 		c)
 			ctype="continuous"
@@ -101,6 +107,7 @@ echo "[$NAME] - MI task:  	 $mitask"
 echo "[$NAME] - Integrator:  $itype"
 echo "[$NAME] - Feedback:  	 $feedback"
 echo "[$NAME] - Control:  	 $ctype"
+echo "[$NAME] - Loop ip:  	 $iploop"
 
 
 # Upload all parameters to nameserver and start BCI processing
@@ -115,14 +122,14 @@ cl_rpc storeconfig $icomponent $iname $itype
 echo "[$NAME] - Uploading control parameters to nameserver"
 cl_rpc storeconfig $ccomponent $cname $ctype
 
-# Re-set ic pipe for the device
-device_ip=$(ccfg_getstring -x $bcixml -p device/ip)
-device_port=$(ccfg_getint -x $bcixml -p device/ndf/port)
+# Get ic pipe for the device
+echo "[$NAME] - Get ic pipe for device"
 device_ic=$(ccfg_getstring -x $bcixml -p device/ndf/ic)
+echo "[$NAME] - Device connects at $device_ic"
 
-echo "[$NAME] - Set device connection: $device_ip:$device_port ($device_ic)"
-cl_rpc unset $device_ic
-cl_rpc set $device_ic $device_ip:$device_port
+echo "[$NAME] - Starting the ROS slaves with TiC/TiD nodes"
+gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && rosparam set /tic_pipes2ros ['$device_ic'] && sleep 1 && rosrun cnbiros_bci rostic'" \
+			   --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && rosparam set /tid_pipes \"['/bus', '/dev']\" && sleep 1 && rosrun cnbiros_bci rostid'"
 
 echo "[$NAME] - Opening GDF and log files"
 # Open GDF and log files
@@ -150,7 +157,7 @@ elif [ "$feedback" == "mi_online_python" ]; then
 elif [ "$feedback" == "mi_mobile_python" ]; then
 	#$(gnome-terminal -e "$feedback -x $bcixml -t $mitask -b $miblock")
 	#feedback=python2
-	$feedback -x $bcixml -t $mitask -b $miblock
+	$feedback -x $bcixml -t $mitask -b $miblock -a $iploop
 else
 	echo "[$NAME] - Uknown feedback executable provided ($feedback), shutting down"
 fi
@@ -170,6 +177,11 @@ echo "[$NAME] - Unload configuration from nameserver"
 cl_rpc eraseconfig $icomponent $iname
 cl_rpc eraseconfig $ccomponent $cname
 sleep 1
+
+# Close ROS local node
+echo "[$NAME] - Close ROS local nodes"
+killall -15 rostic
+killall -15 rostid
 
 # Close python gui
 echo "[$NAME] - Close python GUI"

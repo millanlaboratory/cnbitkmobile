@@ -15,13 +15,14 @@ from select import *
 
 class KeyLogger(QtGui.QWidget):
     
-    def __init__(self):
+    def __init__(self, iploop = '127.0.0.1'):
         super(KeyLogger, self).__init__()
+        self.iploop = iploop
         self.initUI()
         
     def initUI(self):      	
 
-            self.bci = BCI.BciInterface()
+        self.bci = BCI.BciInterface(self.iploop)
             #try:
              #   self.sendTidEvent(781)
                #print('sent')

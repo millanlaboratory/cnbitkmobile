@@ -3,7 +3,7 @@ import atexit
 from socket import *
 
 class BciInterface:
-    def __init__(self):
+    def __init__(self, IPLOOP):
 		# Setup TOBI interfaces iC and iD
 
 		#------------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class BciInterface:
 		self.id_serializer_bus = pylibtobiid.IDSerializer(self.id_msg_bus, True)
 		
 		# Bind sockets for iD
-		self.iDIP_bus = '127.0.0.1'
+		self.iDIP_bus = IPLOOP
 		self.iDport_bus = 8126
 
 		self.idStreamer_bus = pytpstreamer.TPStreamer()
@@ -54,7 +54,7 @@ class BciInterface:
 		self.icStreamer = pytpstreamer.TPStreamer()
 		
 		# Bind sockets for iC
-		self.iCIP = '127.0.0.1'
+		self.iCIP = IPLOOP
 
 		# IC stream ctrl1
 		self.iCport = 9501
