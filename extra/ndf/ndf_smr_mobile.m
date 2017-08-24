@@ -104,8 +104,8 @@ try
                 integrator = smrinc_integrator_xmlparam_dynamic(loop.cfg.config, integrator);
                 cl_updatelog(loop.cl, sprintf('phi=%f',    integrator.param.phi));
                 cl_updatelog(loop.cl, sprintf('chi=%f',    integrator.param.chi));
-                cl_updatelog(loop.cl, sprintf('inc=%f',    integrator.param.inclim));
-                cl_updatelog(loop.cl, sprintf('nrp=%f',   integrator.param.nrpt));
+                cl_updatelog(loop.cl, sprintf('inc=%f',    integrator.param.inc));
+                cl_updatelog(loop.cl, sprintf('nrp=%f',   integrator.param.nrp));
         end  
     catch exception
         ndf_printexception(exception);

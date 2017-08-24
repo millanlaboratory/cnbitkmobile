@@ -2,7 +2,7 @@ PACKAGE_NAME = @PACKAGE_NAME@
 
 protocolmatdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/ndf
 protocolmat_DATA = 	ndf/ndf_smrinc.m \
-					ndf/ndf_smr_polyfit.m \
+					ndf/ndf_smrinc_polyfit.m \
 					ndf/ndf_smr_mobile.m \
 					ndf/ndf_smr_mobile_polyfit.m \
 		      		ndf/ndf_smrinc_include.m	\
