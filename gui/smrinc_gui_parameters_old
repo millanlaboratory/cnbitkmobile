@@ -59,9 +59,8 @@ root.title('Enter parameters')
 alpha=StringVar()
 chi=StringVar()
 phi=StringVar()
-inc=StringVar()
-nrp=StringVar()
-
+gamma=StringVar()
+rho=StringVar()
 
 #Path for saving data
 date = datetime.now().timetuple()
@@ -111,8 +110,8 @@ try:
     alpha.set(float(xml.findtext('.//integrator/ema/alpha')))
     phi.set(float(xml.findtext('.//integrator/dynamic/phi')))
     chi.set(float(xml.findtext('.//integrator/dynamic/chi')))
-    inc.set(float(xml.findtext('.//integrator/dynamic/inc')))
-    nrp.set(float(xml.findtext('.//integrator/dynamic/nrp')))
+    gamma.set(float(xml.findtext('.//integrator/vema/gamma')))
+    rho.set(float(xml.findtext('.//integrator/vema/rho')))
 except TypeError:
     sys.exit('ERROR: problem while determining default values from XML file')
 
@@ -148,7 +147,7 @@ ttk.Label(mainframe, text='Dynamical').grid(row=3, columnspan=4, sticky=(NW))
 ttk.Label(mainframe, text='Phi:').grid(column=0, row=4, sticky=W)
 phi_button = ttk.Button(mainframe, text='Save', command 
            = lambda : save('phi'))
-phi_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.01, textvariable=phi)
+phi_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.05, textvariable=phi)
 phi_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
 phi_entry.grid(column=1, row=4)
 phi_button.grid(column=2, row=4, sticky=E)
@@ -162,38 +161,41 @@ chi_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
 chi_entry.grid(column=1, row=5)
 chi_button.grid(column=2, row=5, sticky=E)
 chi_saved.grid(column=3, row=5)
-#Parameter inc
-ttk.Label(mainframe, text='Inc:').grid(column=0, row=6, sticky=W)
-inc_button = ttk.Button(mainframe, text='Save', command 
-           = lambda : save('inc'))
-inc_entry = Spinbox(mainframe, width=5, from_=0.0, to=5.0, increment=0.01, textvariable=inc)
-inc_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
-inc_entry.grid(column=1, row=6)
-inc_button.grid(column=2, row=6, sticky=E)
-inc_saved.grid(column=3, row=6)
-#Parameter nrp
-ttk.Label(mainframe, text='Nrp:').grid(column=0, row=7, sticky=W)
-nrp_button = ttk.Button(mainframe, text='Save', command 
-           = lambda : save('nrp'))
-nrp_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.01, textvariable=nrp)
-nrp_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
-nrp_entry.grid(column=1, row=7)
-nrp_button.grid(column=2, row=7, sticky=E)
-nrp_saved.grid(column=3, row=7)
+
+#Adaptive exptl. smoothing
+ttk.Label(mainframe, text='AdES').grid(row=6, columnspan=4, sticky=(NW))
+#Parameter gamma
+ttk.Label(mainframe, text='Gamma:').grid(column=0, row=7, sticky=W)
+gamma_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('gamma'))
+gamma_entry = Spinbox(mainframe, width=5, from_=0.0, to=5.0, increment=0.1, textvariable=gamma)
+gamma_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+gamma_entry.grid(column=1, row=7)
+gamma_button.grid(column=2, row=7, sticky=E)
+gamma_saved.grid(column=3, row=7)
+#Parameter rho
+ttk.Label(mainframe, text='Rho:').grid(column=0, row=8, sticky=W)
+rho_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('rho'))
+rho_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.1, textvariable=rho)
+rho_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+rho_entry.grid(column=1, row=8)
+rho_button.grid(column=2, row=8, sticky=E)
+rho_saved.grid(column=3, row=8)
 
 #Dict for accessing objects pertaining each parameter
 parameters = {'alpha' : [alpha_saved, alpha_button, alpha, 'ema'], 
           'phi' : [phi_saved, phi_button, phi, 'dynamic'],
           'chi' : [chi_saved, chi_button, chi, 'dynamic'],
-	  'inc' : [inc_saved, inc_button, inc, 'dynamic'],
-	  'nrp' : [nrp_saved, nrp_button, nrp, 'dynamic']}
+          'gamma' : [gamma_saved, gamma_button, gamma, 'vema'],
+          'rho' : [rho_saved, rho_button, rho, 'vema']}
 
 #Behavior when parameter is changed
 alpha.trace('w', lambda n1,n2,op,parameter='alpha' : val_changed(parameter))
 phi.trace('w', lambda n1,n2,op,parameter='phi' : val_changed(parameter))
 chi.trace('w', lambda n1,n2,op,parameter='chi' : val_changed(parameter))
-inc.trace('w', lambda n1,n2,op,parameter='inc' : val_changed(parameter))
-nrp.trace('w', lambda n1,n2,op,parameter='nrp' : val_changed(parameter))
+gamma.trace('w', lambda n1,n2,op,parameter='gamma' : val_changed(parameter))
+rho.trace('w', lambda n1,n2,op,parameter='rho' : val_changed(parameter))
 
 phi_saved['foreground']='#B6B6B4'
 

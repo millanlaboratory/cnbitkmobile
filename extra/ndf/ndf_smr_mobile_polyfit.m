@@ -1,4 +1,4 @@
-function ndf_smr_mobile
+function ndf_smr_mobile_polyfit
 
 % Include all the required toolboxes
 ndf_smrinc_include();
@@ -101,11 +101,19 @@ try
                 cl_updatelog(loop.cl, sprintf('rejection=%f', integrator.param.rejection));
                 cl_updatelog(loop.cl, sprintf('alpha=%f',     integrator.param.alpha));
             case 'dynamic'
-                integrator = smrinc_integrator_xmlparam_dynamic(loop.cfg.config, integrator);
+                integrator = smrinc_integrator_xmlparam_dynamic_polyfit(loop.cfg.config, integrator);
+                integrator.coeff = smrinc_integrator_forceprofile_polyfit(integrator.param.inclim, integrator.param.nrpt, integrator.param.bias, integrator.param.degree);   
                 cl_updatelog(loop.cl, sprintf('phi=%f',    integrator.param.phi));
                 cl_updatelog(loop.cl, sprintf('chi=%f',    integrator.param.chi));
+                cl_updatelog(loop.cl, sprintf('bias=%f',   integrator.param.bias));
                 cl_updatelog(loop.cl, sprintf('inc=%f',    integrator.param.inclim));
-                cl_updatelog(loop.cl, sprintf('nrp=%f',   integrator.param.nrpt));
+                cl_updatelog(loop.cl, sprintf('nrpt=%f',   integrator.param.nrpt));
+                cl_updatelog(loop.cl, sprintf('degree=%f', integrator.param.degree));
+            case 'vema'
+                integrator = smrinc_integrator_xmlparam_vema(loop.cfg.config, integrator);
+                integrator.xchg = 0;
+                cl_updatelog(loop.cl, sprintf('rho=%f',     integrator.param.rho));
+                cl_updatelog(loop.cl, sprintf('gamma=%f',   integrator.param.gamma));
         end  
     catch exception
         ndf_printexception(exception);
@@ -235,24 +243,24 @@ try
                         disp(['[ndf_smr_mobile] - DEBUG: Changed chi parameter for dynamic to: ' userchi]);
                     end
                 end
-                userinc = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'inc');
-                if(isempty(userinc) == false)
-                    if(str2double(userinc) ~= double(integrator.param.inc))
-                        integrator.param.inc = str2double(userinc);
-                        disp(['[ndf_smr_mobile] - DEBUG: Changed inc parameter for dynamic to: ' userinc]);
+                integrator.nprobs = smrinc_integrator_dynamic_polyfit(integrator.cprobs, integrator.nprobs, integrator.coeff, integrator.param.phi, integrator.param.chi, integrator.dt);
+            case 'vema'
+                userrho   = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'rho');
+                usergamma = ndf_read_param(integrator.filepath, 'integrator', 'vema', 'gamma');
+                if(isempty(userrho) == false)
+                    if(str2double(userrho) ~= double(integrator.param.rho))
+                        integrator.param.rho = str2double(userrho);
+                        disp(['[ndf_smr_mobile] - DEBUG: Changed rho parameter for vema to: ' userrho]);
                     end
                 end
-                usernrp = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'nrp');
-                if(isempty(usernrp) == false)
-                    if(str2double(usernrp) ~= double(integrator.param.nrp))
-                        integrator.param.nrp = str2double(usernrp);
-                        disp(['[ndf_smr_mobile] - DEBUG: Changed nrp parameter for dynamic to: ' usernrp]);
+                if(isempty(usergamma) == false)
+                    if(str2double(usergamma) ~= double(integrator.param.gamma))
+                        integrator.param.gamma = str2double(usergamma);
+                        disp(['[ndf_smr_mobile] - DEBUG: Changed gamma parameter for vema to: ' usergamma]);
                     end
                 end
-                integrator.nprobs = smrinc_integrator_dynamic(integrator.cprobs, integrator.nprobs, ...
-                                                              integrator.param.phi, integrator.param.chi, ...
-                                                              integrator.param.inc, integrator.param.nrp, ...
-                                                              integrator.dt);
+                
+                [integrator.nprobs, integrator.xchg] = smrinc_integrator_vema(integrator.cprobs, integrator.xchg, integrator.nprobs, integrator.param.rho, integrator.param.gamma, integrator.dt);
         end
         
 		% Handle async TOBI iD communication
