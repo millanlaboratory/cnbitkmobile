@@ -17,7 +17,8 @@ graphics_DATA = graphics/blk_ring.gif	\
 			    graphics/ptr_blue.gif	\
 			    graphics/ptr_red.gif		\
 			    graphics/r_arrow.gif		\
-			    graphics/timeout.gif	
+			    graphics/timeout.gif	\
+			    graphics/square.gif	
 
 install-exec-local:
 	python setup.py install \
