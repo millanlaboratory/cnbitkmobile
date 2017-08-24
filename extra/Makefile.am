@@ -2,15 +2,20 @@ PACKAGE_NAME = @PACKAGE_NAME@
 
 protocolmatdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/ndf
 protocolmat_DATA = 	ndf/ndf_smrinc.m \
+					ndf/ndf_smr_polyfit.m \
 					ndf/ndf_smr_mobile.m \
+					ndf/ndf_smr_mobile_polyfit.m \
 		      		ndf/ndf_smrinc_include.m	\
 		      		ndf/smrinc_integrator_dynamic.m \
+		      		ndf/smrinc_integrator_dynamic_polyfit.m \
 			  		ndf/smrinc_integrator_ema.m \
 			  		ndf/smrinc_integrator_forceprofile.m \
+			  		ndf/smrinc_integrator_forceprofile_polyfit.m \
 			  		ndf/smrinc_integrator_vema.m \
 			  		ndf/smrinc_integrator_xmlparam_dynamic.m \
+			  		ndf/smrinc_integrator_xmlparam_dynamic_polyfit.m \
 			  		ndf/smrinc_integrator_xmlparam_ema.m \
-			  		ndf/smrinc_integrator_xmlparam_vema.m
+			  		ndf/smrinc_integrator_xmlparam_vema.m 
 
 protocolxmldir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/xml
 protocolxml_DATA = xml/smrinc_template.xml \
