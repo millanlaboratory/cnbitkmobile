@@ -87,13 +87,6 @@
 		</vema>
 	</integrator>	
 
-	<!-- Device configuration -->
-	<device>
-		<ndf>
-			<ic>/ctrl2</ic>
-			<gdfevent>0x0580</gdfevent>
-		</ndf>
-	</device>
 	<!-- Classifiers Block -->
 	<classifier>
 		<kmi0>
