@@ -62,6 +62,7 @@ if args.a == None:
     print 'WARNING: Default loop ip: %s' % (iploop)
 else:
     print 'Loop ip: %s' % (iploop)
+
     
 
 #Functions for communication with BCI loop    
@@ -222,6 +223,7 @@ def feedback_update(mode='in_trial', task=None, control=None):
         pass on events from handle_events() if necessary
         enter boom stage if threshold reached
         return continue if no special event happens"""
+    
     if control == None:
         x = get_bci_val()
     else: x = float(control)
@@ -234,19 +236,21 @@ def feedback_update(mode='in_trial', task=None, control=None):
     #When threshold passed during left/right task - boom 
     global feedback_running
     if x >= r_thr:
+        if mode == 'in_trial':
+            bci.sendTidEvent(evtCmdRgt)
+            pg.time.wait(200)
         bci.sendTidEvent(evtCFeed+evtOff)
         feedback_running = False
         print('right threshold reached')
-        if mode == 'in_trial':
-            bci.sendTidEvent(evtCmdRgt)
         boom_stage(x, 'right', mode)
         return #'right'
     elif x <= l_thr:
+        if  mode =='in_trial':
+            bci.sendTidEvent(evtCmdLft)
+            pg.time.wait(200)
         bci.sendTidEvent(evtCFeed+evtOff)
         feedback_running = False
         print('left threshold reached')
-        if  mode =='in_trial':
-            bci.sendTidEvent(evtCmdLft)
         boom_stage(x, 'left',mode)
         return #'left'
     else:
@@ -273,7 +277,7 @@ def fullscreen(bci_val, boom=None):
     maximized_window = not maximized_window
 
 def handle_events():
-    """change window or exit program if requested"""
+    """change window or exit program if requested, for other commands return corresponding strings"""
     global go_on    
     if not pg.display.get_init():
         go_on = False
@@ -434,11 +438,11 @@ def initialize_program():
 def empty_bci_stack():
     """consume stack of old BCI TiC values, reset feedback to 0.5
     Should be called directly before feedback is activated"""
+    global feedback_running
     if not feedback_running:
         while bci.readTicAllProb() != None :
             pass
         bci.sendTidEvent(evtCFeed)
-        global feedback_running
         feedback_running = True
 
 
@@ -476,6 +480,7 @@ def prepare_for_trial(command):
 
 def trial_stage():
     print('Trial starts')
+    bci.sendTidEvent(evtCmdResume)
     while go_on:
         if not feedback_running:
             empty_bci_stack()
@@ -493,7 +498,6 @@ def trial_stage():
 
 
 def main():
-
     global go_on, app, bci, robot_moving, feedback_running
     go_on = True
     #feedback_running indicates if evtCfeed has been sent before or evtCfeed+evtOff so that they always alternate
@@ -511,10 +515,11 @@ def main():
     initialize_program()
     
     while go_on:    
-        empty_bci_stack()
+        #empty_bci_stack()
         command = wait_for_commnand()
         if feedback_running:
             bci.sendTidEvent(evtCFeed+evtOff)
+            pg.time.wait(200)
         feedback_running = False
         if command == 'exit':
             return
@@ -525,16 +530,16 @@ def main():
             continue
 
         #Actual trial will start
-        bci.sendTidEvent(evtTask0+command)
         robot_moving = True
-        bci.sendTidEvent(evtCmdResume)
         if trial_stage() == 'exit':
             return
         else:
             bci.sendTidEvent(evtCmdPause)
             robot_moving = False
+            pg.time.wait(200)
             if feedback_running:
                 bci.sendTidEvent(evtCFeed+evtOff)
+                pg.time.wait(200)
             feedback_running = False
 
 
