@@ -478,16 +478,22 @@ def prepare_for_trial(command):
             feedback_update(mode='cue', task=command)
     return 'go on'
 
-def trial_stage():
+def trial_stage(task):
     print('Trial starts')
+    bci.sendTidEvent(evtTask0+task)
+    pg.time.wait(200)
     bci.sendTidEvent(evtCmdResume)
     while go_on:
         if not feedback_running:
             empty_bci_stack()
         command1 = handle_events()
         if command1 == 'exit':
+            bci.sendTidEvent(evtTask0+task+evtOff)
+            pg.time.wait(200)
             return 'exit'
         elif command1 == 'end trial':
+            bci.sendTidEvent(evtTask0+task+evtOff)
+            pg.time.wait(200)
             print('Trial ended')
             return 'end trial'
         elif command1 in ['0', '1']:
@@ -531,7 +537,7 @@ def main():
 
         #Actual trial will start
         robot_moving = True
-        if trial_stage() == 'exit':
+        if trial_stage(command) == 'exit':
             return
         else:
             bci.sendTidEvent(evtCmdPause)
