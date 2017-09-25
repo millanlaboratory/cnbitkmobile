@@ -210,9 +210,12 @@ def boom_stage(bci_val, boom_type,mode):
         t = t_boom
     time = pg.time.get_ticks()
     while pg.time.get_ticks() - time < t:
-        if handle_events() == 'exit':
+        evt = handle_events()
+        if evt == 'exit':
             #bci.sendTidEvent(evt+evtOff)
             return
+        if evt == 'end trial':
+            return 'end trial'
         ptr_update(bci_val, boom_type)
     #bci.sendTidEvent(evt+evtOff)
     return
@@ -242,7 +245,8 @@ def feedback_update(mode='in_trial', task=None, control=None):
         bci.sendTidEvent(evtCFeed+evtOff)
         feedback_running = False
         print('right threshold reached')
-        boom_stage(x, 'right', mode)
+        if boom_stage(x, 'right', mode) == 'end trial':
+            return 'end trial'
         return #'right'
     elif x <= l_thr:
         if  mode =='in_trial':
@@ -251,7 +255,8 @@ def feedback_update(mode='in_trial', task=None, control=None):
         bci.sendTidEvent(evtCFeed+evtOff)
         feedback_running = False
         print('left threshold reached')
-        boom_stage(x, 'left',mode)
+        if boom_stage(x, 'left',mode) == 'end trial':
+            return 'end trial'
         return #'left'
     else:
         return #'continue'
@@ -473,9 +478,13 @@ def prepare_for_trial(command):
             print("Interrupted - won't start trial")
             return 'end trial'
         elif command0 in ['0', '1']:
-            feedback_update(mode='cue', task=command, control=command0)
+            if feedback_update(mode='cue', task=command, control=command0) == 'end trial':
+                print("Interrupted - won't start trial")
+                return 'end trial'    
         else:
-            feedback_update(mode='cue', task=command)
+            if feedback_update(mode='cue', task=command) == 'end trial':
+                print("Interrupted - won't start trial")
+                return 'end trial'    
     return 'go on'
 
 def trial_stage(task):
@@ -497,9 +506,18 @@ def trial_stage(task):
             print('Trial ended')
             return 'end trial'
         elif command1 in ['0', '1']:
-            feedback_update(mode='in_trial', control=command1)
+            if feedback_update(mode='in_trial', control=command1) == 'end trial':
+                bci.sendTidEvent(evtTask0+task+evtOff)
+                pg.time.wait(200)
+                print('Trial ended')
+                return 'end trial'
         else:
-            feedback_update(mode='in_trial')
+            if feedback_update(mode='in_trial') == 'end trial':
+                bci.sendTidEvent(evtTask0+task+evtOff)
+                pg.time.wait(200)
+                print('Trial ended')
+                return 'end trial'
+
 
 
 
