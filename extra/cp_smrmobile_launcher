@@ -7,6 +7,7 @@ DEFAULT_MI_TASK="mi_bhbf"
 
 DEFAULT_FEEDBACK_EXECUTABLE="mi_mobile_python"
 DEFAULT_IP_LOOP="127.0.0.1"
+DEFAULT_TRACKING_ENABLE=false
 
 usage(){
 	printf "\n[$NAME] - Usage: $NAME -x XMLPATH -c|-d [OPTION]...\n\n"
@@ -18,12 +19,14 @@ usage(){
 	printf "	-t 		experiment taskset 	[Default: 'mi_bhbf']\n"
 	printf "	-e 		Feedback executable [Default: 'mi_online_python']\n"
 	printf "	-a 		Loop ip [Default: '127.0.0.1']\n"
+	printf "	-T		Enabling tracking the robot with external laptop\n"
 }
 
 miblock=$DEFAULT_MI_BLOCK
 mitask=$DEFAULT_MI_TASK
 feedback=$DEFAULT_FEEDBACK_EXECUTABLE
 iploop=$DEFAULT_IP_LOOP
+enable_tracking=$DEFAULT_TRACKING_ENABLE
 icomponent="integrator"
 iname="type"
 ccomponent="control"
@@ -35,7 +38,7 @@ iflag=false
 cflag=false
 
 # Getting optional arguments
-while getopts ":t:b:x:i:e:a:dc" opt; do
+while getopts ":t:b:x:i:e:a:dcT" opt; do
 	case $opt in
 		t)
 			mitask=$OPTARG
@@ -65,6 +68,9 @@ while getopts ":t:b:x:i:e:a:dc" opt; do
 		d)
 			ctype="discrete"
 			cflag=true
+			;;
+		T)
+			enable_tracking=true
 			;;
 		\?)
 			echo "[$NAME] - Invalid option: -$OPTARG" >&2
@@ -108,6 +114,7 @@ echo "[$NAME] - Integrator:  $itype"
 echo "[$NAME] - Feedback:  	 $feedback"
 echo "[$NAME] - Control:  	 $ctype"
 echo "[$NAME] - Loop ip:  	 $iploop"
+echo "[$NAME] - Tracking:	 $enable_tracking"
 
 
 # Upload all parameters to nameserver and start BCI processing
@@ -131,7 +138,7 @@ echo "[$NAME] - Starting the ROS slaves with TiC/TiD nodes"
 #gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && . $ROS_WORKSPACE_CURRENT/setup_network.bash bci && rosparam set /tic_pipes2ros ['$device_ic'] && sleep 1 && rosrun cnbiros_bci rostic'" \
 #			   --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && . $ROS_WORKSPACE_CURRENT/setup_network.bash bci && rosparam set /tid_pipes \"['/bus', '/dev']\" && sleep 1 && rosrun cnbiros_bci rostid'"
 BAGNAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.bag"
-gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && roslaunch cnbiros_robotino_bci ros_robotino_telepresence.launch set_tic_pipes2ros:=['$device_ic'] set_bag_name:=$BAGNAME '"
+gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && roslaunch cnbiros_robotino_bci ros_robotino_telepresence.launch set_tic_pipes2ros:=['$device_ic'] set_bag_name:=$BAGNAME tracking:=$enable_tracking '"
 
 echo "[$NAME] - Opening GDF and log files"
 # Open GDF and log files

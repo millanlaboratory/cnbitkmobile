@@ -39,10 +39,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-x', help='path to XML file')
 parser.add_argument('-t', help='Taskset, default: mi_bhbf')
 parser.add_argument('-b', help='block, default: mi')
+parser.add_argument('-a', help='ip address of loop, default: 127.0.0.1')
 args = parser.parse_args()
 path = args.x
 tskst = args.t
 block = args.b
+iploop = args.a
 if args.x == None:
     sys.exit('ERROR: No path to XML file given')
 if args.t == None:
@@ -53,6 +55,11 @@ if args.b == None:
     #sys.exit('ERROR: No block given')
     print('WARNING: no block given, using default: mi')
     block = 'mi'
+if args.a == None:
+    iploop = '127.0.0.1'
+    print 'WARNING: Default loop ip: %s' % (iploop)
+else:
+    print 'Loop ip: %s' % (iploop)
     
 
 #Functions for communication with BCI loop    
@@ -553,7 +560,7 @@ def main():
     app = kl.QtGui.QApplication(kl.sys.argv)
     #Initialize KeyLogger object to communicate with BCI
     try:
-        bci = kl.KeyLogger()
+        bci = kl.KeyLogger(iploop)
     except:
         sys.exit('ERROR: could not connect to BCI loop')  
     
