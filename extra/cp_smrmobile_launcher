@@ -137,12 +137,12 @@ echo "[$NAME] - Device connects at $device_ic"
 echo "[$NAME] - Starting the ROS slaves with TiC/TiD nodes"
 #gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && . $ROS_WORKSPACE_CURRENT/setup_network.bash bci && rosparam set /tic_pipes2ros ['$device_ic'] && sleep 1 && rosrun cnbiros_bci rostic'" \
 #			   --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && . $ROS_WORKSPACE_CURRENT/setup_network.bash bci && rosparam set /tid_pipes \"['/bus', '/dev']\" && sleep 1 && rosrun cnbiros_bci rostid'"
-BAGNAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.bag"
+BAGNAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.mobile.bag"
 gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && roslaunch cnbiros_robotino_bci ros_robotino_telepresence.launch set_tic_pipes2ros:=['$device_ic'] set_bag_name:=$BAGNAME tracking:=$enable_tracking '"
 
 echo "[$NAME] - Opening GDF and log files"
 # Open GDF and log files
-GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.gdf"
+GDFBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -a)".$itype.mobile.gdf"
 LOGBASENAME=$(ccfg_cli -x $bcixml -N -B $miblock -T $mitask -o)
 cl_rpc openxdf $GDFBASENAME $LOGBASENAME "smrinc"
 
@@ -187,10 +187,10 @@ cl_rpc eraseconfig $icomponent $iname
 cl_rpc eraseconfig $ccomponent $cname
 sleep 1
 
-# Close ROS local node
-#echo "[$NAME] - Close ROS local nodes"
-#killall -15 rostic
-#killall -15 rostid
+# Close ROS BAG node
+echo "[$NAME] - Close ROS BAG nodes"
+rosnode kill /rosbag_record
+rosnode kill /rosbag_record_tracking
 
 # Close python gui
 echo "[$NAME] - Close python GUI"
