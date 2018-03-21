@@ -1,79 +1,45 @@
+#ifndef CNBI_MI_MOBILE_OFFLINE_HPP
+#define CNBI_MI_MOBILE_OFFLINE_HPP
+
 #include <getopt.h>
 
 #include <cnbiloop/ClLoop.hpp>
-#include <cnbiloop/ClTobiIc.hpp>
 #include <cnbiloop/ClTobiId.hpp>
 
 #include "CmFeedback.hpp"
+#include "mi_mobile_configuration.hpp"
 
 #define CNBITK_MOBILE_HARD_LEFT 	1
 #define CNBITK_MOBILE_HARD_RIGHT 	2
 
 void usage(void) { 
-	printf("Usage: mi_mobile_feedback [OPTION]\n\n");
-	printf("  -n       Ic pipe name ('/ctrl6' default)\n");
-	printf("  -c       Ic classifier name ('control' default)\n");
-	printf("  -l       Ic class label ('standard' default)\n");
+	printf("Usage: mi_mobile_offline [OPTION]\n\n");
 	printf("  -h       display this help and exit\n");
 	CcCore::Exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char** argv) {
 
-	// Optional arguments
-	int opt;
-	std::string icpipe("/ctrl6");
-	std::string iccname("control");
-	std::string icclabel("standard");
 	std::string idpipe("/bus");
-
-	while((opt = getopt(argc, argv, "n:c:l:h")) != -1) {
-		if(opt == 'n') {
-			icpipe.assign(optarg);
-		} else if(opt == 'c') {
-			iccname.assign(optarg);
-		} else if(opt == 'l') {
-			icclabel.assign(optarg);
-		} else {
-			usage();
-			CcCore::Exit(opt == 'h' ? EXIT_SUCCESS : EXIT_FAILURE);
-		}
-	}
 
 	// Tools for feedback
 	cnbi::mobile::CmFeedback* 	feedback;
 
 	// Tools for TOBI interfaces
 	ClTobiId*	id;
-	ClTobiIc*	ic;
 
 	IDMessage			idm;	
 	IDSerializerRapid* 	ids;
-	ICMessage 			icm;
-	ICSerializerRapid* 	ics;
-	ICClassifier* 		icc;
-	ICClass*			icl;
-	bool waitic;
-	bool icreceived;
-	int fidx;
-	bool hard;
-
+	
 	// Initialization TobiId
 	id  = new ClTobiId(ClTobiId::SetGet);
 	ids = new IDSerializerRapid(&idm);
-	idm.SetDescription("mi_mobile_feedback");
+	idm.SetDescription("mi_mobile_offline");
 	idm.SetFamilyType(IDMessage::FamilyBiosig);
 	idm.SetEvent(0);
 
-	// Initialization TobiIc
-	ic   = new ClTobiIc(ClTobiIc::GetOnly);
-	ics  = new ICSerializerRapid(&icm);
-	icc  = NULL;
-	icl  = NULL;
-	fidx = TCBlock::BlockIdxUnset;
-
 	// Initialization ClLoop
-	CcCore::OpenLogger("mi_mobile_feedback");
+	CcCore::OpenLogger("mi_mobile_offline");
 	CcCore::CatchSIGINT();
 	CcCore::CatchSIGTERM();
 	ClLoop::Configure();
@@ -94,53 +60,16 @@ int main(int argc, char** argv) {
 	}
 	CcLogInfo("Id connected");
 	
-	// Attach Ic
-	CcLogInfoS("Connecting Ic to "<< icpipe << "...");
-	if(ic->Attach(icpipe) == false) {
-		CcLogFatalS("Cannot attach Ic to "<<icpipe);
-		goto shutdown;
-	}
-	CcLogInfo("Ic connected");
-
 	// Initialization feedback
 	feedback = new cnbi::mobile::CmFeedback();
 	feedback->Start();
 
-
-	// Wait for the first Ic message
-	waitic = true;
-	while(waitic == true) {
-		switch(ic->GetMessage(ics)) {
-			case ClTobiIc::Detached:
-				CcLogFatal("iC detached");
-				goto shutdown;
-			case ClTobiIc::HasMessage:
-				CcLogInfo("iC message received");
-				waitic = false;
-				break;
-			default:
-				case ClTobiIc::NoMessage:
-				break;
-			}
-	}
-	// Verify the incoming IC message
-	try {
-		icc = icm.GetClassifier(iccname);
-		CcLogConfigS("iC message verified: '" << iccname << "' classifier found"); 
-	} catch(TCException e) {
-		CcLogFatalS("Wrong iC message: '" << iccname << "' classifier missing");
-		goto shutdown;
-	}
-
-
 	// Start main loop
 	while(true) {
 
-		hard = false;
-		idm.SetEvent(781);
-		id->SetMessage(ids, TCBlock::BlockIdxUnset, &fidx);
 		feedback->Reset();
 
+		/*
 		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage) {
 			
 			// Check the frame idx of the new message (SYNC TO BE CHECKED)
@@ -176,7 +105,6 @@ int main(int argc, char** argv) {
 				break;
 			}
 			
-			/* Handbrake */
 			if(ClLoop::IsConnected() == false) {
 				CcLogFatal("Cannot connect to loop");
 				goto shutdown;
@@ -188,6 +116,7 @@ int main(int argc, char** argv) {
 			}
 
 		}
+	*/
 	}
 
 
@@ -204,18 +133,12 @@ shutdown:
 	if(id->IsAttached())
 		id->Detach();
 	
-	// Detach ic
-	if(ic->IsAttached())
-		ic->Detach();
-
 	// Free memory
 	delete feedback;
 	delete id;
-	delete ic;
 	delete ids;
-	delete ics;
-	delete icc;
-
 
 	CcCore::Exit(EXIT_SUCCESS);
 }
+
+#endif
