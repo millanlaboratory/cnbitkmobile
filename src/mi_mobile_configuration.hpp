@@ -25,8 +25,14 @@ typedef struct event_struct {
 	unsigned int hit;
 	unsigned int miss;
 	unsigned int timeout;
-	unsigned int device;
 } mievent;
+
+typedef struct device_event_struct {
+	unsigned int start;
+	unsigned int stop;
+	unsigned int pause;
+	unsigned int quit;
+} devevent;
 
 
 bool mi_mobile_get_timings(CCfgConfig* config, mitiming* timings) {
@@ -50,6 +56,55 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming* timings) {
 		CcLogException(e.Info());
 		return false;
 	}
+}
+
+bool mi_mobile_get_events(CCfgConfig* config, mievent* events) {
+
+	try {
+		config->RootEx()->QuickEx("events/gdfevents/")->SetBranch();
+		events->wait		= config->BranchEx()->QuickGDFIntEx("wait");
+		events->fixation	= config->BranchEx()->QuickGDFIntEx("fixation");
+		events->cfeedback	= config->BranchEx()->QuickGDFIntEx("cfeedback");
+		events->off			= config->BranchEx()->QuickGDFIntEx("off");
+		events->hit			= config->BranchEx()->QuickGDFIntEx("hit");
+		events->miss		= config->BranchEx()->QuickGDFIntEx("miss");
+		events->timeout		= config->BranchEx()->QuickGDFIntEx("timeout");
+
+		return true;
+
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		return false;
+	}
+}
+
+bool mi_mobile_get_device_events(CCfgConfig* config, devevent* devevents) {
+
+	try {
+		config->RootEx()->QuickEx("events/gdfevents/")->SetBranch();
+		devevents->start	= config->BranchEx()->QuickGDFIntEx("start");
+		devevents->stop		= config->BranchEx()->QuickGDFIntEx("stop");
+		devevents->pause	= config->BranchEx()->QuickGDFIntEx("pause");
+		devevents->quit		= config->BranchEx()->QuickGDFIntEx("quit");
+
+		return true;
+
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		return false;
+	}
+}
+
+bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset, const std::string name) {
+
+	try {
+		config->RootEx()->QuickEx("tasksets/"+name)->SetBranch();
+		
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		return false;
+	}
+
 }
 
 #endif
