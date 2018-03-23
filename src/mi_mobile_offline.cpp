@@ -25,6 +25,29 @@ int main(int argc, char** argv) {
 	// Tools for feedback
 	cnbi::mobile::CmFeedback* 	feedback;
 
+	// Tools for configuration
+	CCfgConfig		config;
+	CCfgTaskset*	taskset;
+
+	try {
+		config.ImportFileEx("extra/xml/mi_mobile_template.xml");
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		printf("error xml import\n");
+		CcCore::Exit(EXIT_FAILURE);
+	}
+	
+	taskset = new CCfgTaskset("mi_bhbf");
+	if(mi_mobile_get_taskset(&config, taskset) == false)
+		printf("error\n");
+
+	taskset->Dump();
+
+	for(auto it=taskset->Begin(); it!=taskset->End(); ++it)
+		it->second->Dump();
+
+	CcCore::Exit(EXIT_SUCCESS);
+
 	// Tools for TOBI interfaces
 	ClTobiId*	id;
 

@@ -95,12 +95,14 @@ bool mi_mobile_get_device_events(CCfgConfig* config, devevent* devevents) {
 	}
 }
 
-bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset, const std::string name) {
+bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset) {
 
 	try {
-		config->RootEx()->QuickEx("tasksets/"+name)->SetBranch();
-		
+		config->ParseTasksetEx(taskset->name, taskset);
+		return true;
+
 	} catch(XMLException e) {
+		printf("error\n");
 		CcLogException(e.Info());
 		return false;
 	}
