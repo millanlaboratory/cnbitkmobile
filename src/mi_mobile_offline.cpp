@@ -19,61 +19,114 @@ void usage(void) {
 }
 
 int main(int argc, char** argv) {
+	
+	// Generic variables
+	const std::string	nmscomponent("mi_mobile");
+	const std::string	protocol("mi_mobile_offline");
+	std::string			message;
 
-	std::string idpipe("/bus");
-
-	// Tools for feedback
-	cnbi::mobile::CmFeedback* 	feedback;
-
-	// Tools for configuration
+	// Tools for XML configuration
+	std::string		xfile;
+	std::string		xmode;
+	std::string		xblock;
+	std::string		xtaskset;
 	CCfgConfig		config;
-	CCfgTaskset*	taskset;
-
-	try {
-		config.ImportFileEx("extra/xml/mi_mobile_template.xml");
-	} catch(XMLException e) {
-		CcLogException(e.Info());
-		printf("error xml import\n");
-		CcCore::Exit(EXIT_FAILURE);
-	}
+	CCfgTaskset*	taskset   = nullptr;
+	mitiming_t*		timings   = nullptr;
+	mievent_t*		mievents  = nullptr;
+	devevent_t*		devevents = nullptr;
 	
-	taskset = new CCfgTaskset("mi_bhbf");
-	if(mi_mobile_get_taskset(&config, taskset) == false)
-		printf("error\n");
-
-	taskset->Dump();
-
-	for(auto it=taskset->Begin(); it!=taskset->End(); ++it)
-		it->second->Dump();
-
-	CcCore::Exit(EXIT_SUCCESS);
-
 	// Tools for TOBI interfaces
-	ClTobiId*	id;
-
 	IDMessage			idm;	
-	IDSerializerRapid* 	ids;
+	ClTobiId*			id	= nullptr;
+	IDSerializerRapid* 	ids	= nullptr;
+	std::string			idpipe("/bus");
 	
-	// Initialization TobiId
-	id  = new ClTobiId(ClTobiId::SetGet);
-	ids = new IDSerializerRapid(&idm);
-	idm.SetDescription("mi_mobile_offline");
-	idm.SetFamilyType(IDMessage::FamilyBiosig);
-	idm.SetEvent(0);
-
+	// Tools for feedback
+	cnbi::mobile::CmFeedback*	feedback = nullptr;
+	
 	// Initialization ClLoop
-	CcCore::OpenLogger("mi_mobile_offline");
+	CcCore::OpenLogger(protocol);
 	CcCore::CatchSIGINT();
 	CcCore::CatchSIGTERM();
 	ClLoop::Configure();
 
 	// Connection to ClLoop
-	CcLogInfo("Connecting to loop...");
+	message = "Connecting to loop...";
 	if(ClLoop::Connect() == false) {
-		CcLogFatal("Cannot connect to loop");
+		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}	
-	CcLogInfo("Loop connected");
+	CcLogInfo(message + "done.");
+	
+	// Getting general parameters from nameserver
+	xfile		= ClLoop::nms.RetrieveConfig(nmscomponent, "xml");
+	xmode		= ClLoop::nms.RetrieveConfig(nmscomponent, "modality");
+	xblock		= ClLoop::nms.RetrieveConfig(nmscomponent, "block");
+	xtaskset	= ClLoop::nms.RetrieveConfig(nmscomponent, "taskset");
+	CcLogConfigS("Modality=" << xmode << ", Block=" << xblock << 
+				 ", Taskset=" << xtaskset << ", Configuration=" << xfile);
+
+	// Importing XML configuration
+	message = "Importing XML configuration...";
+	try {
+		config.ImportFileEx(xfile);
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+
+	// Configuration from XML
+	
+	// Taskset configuration
+	message = "Taskset XML configuration...";
+	taskset = new CCfgTaskset(xtaskset);
+	if(mi_mobile_get_taskset(&config, taskset, xmode, xblock) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+
+	// Timings configuration
+	message = "Timings XML configuration...";
+	timings = new mitiming_t;
+	if(mi_mobile_get_timings(&config, timings) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+	
+	// MI events configuration
+	message = "MI events XML configuration...";
+	mievents = new mievent_t;
+	if(mi_mobile_get_mi_events(&config, mievents) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+
+	// Device events configuration
+	message = "Device events XML configuration...";
+	devevents = new devevent_t;
+	if(mi_mobile_get_device_events(&config, devevents) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+
+
+	CcCore::Exit(EXIT_SUCCESS);
+
+	
+	// Initialization TobiId
+	id  = new ClTobiId(ClTobiId::SetGet);
+	ids = new IDSerializerRapid(&idm);
+	idm.SetDescription(protocol);
+	idm.SetFamilyType(IDMessage::FamilyBiosig);
+	idm.SetEvent(0);
+
 
 	// Attach Id to /bus
 	CcLogInfoS("Connecting Id to "<< idpipe <<"...");
@@ -146,20 +199,34 @@ int main(int argc, char** argv) {
 
 shutdown:
 
-	// Stop feedback
-	if(feedback->IsRunning()) {
-		feedback->Stop();
-		feedback->Join();
+	// Taskset shutdown
+	if(taskset != nullptr)
+		delete taskset;
+	
+	// Timings shutdown
+	if(timings != nullptr)
+		delete timings;
+
+	// Feedback shutdown
+	if (feedback != nullptr) {
+		if(feedback->IsRunning()) {
+			feedback->Stop();
+			feedback->Join();
+		}
+		delete feedback;
 	}
 
-	// Detach id
-	if(id->IsAttached())
-		id->Detach();
+	// ClTobiId shutdown
+	if(id != nullptr) {
+		if(id->IsAttached())
+			id->Detach();
 	
-	// Free memory
-	delete feedback;
-	delete id;
-	delete ids;
+		delete id;
+	}
+
+	// IDSerializer shutdown
+	if(ids != nullptr)
+		delete ids;
 
 	CcCore::Exit(EXIT_SUCCESS);
 }

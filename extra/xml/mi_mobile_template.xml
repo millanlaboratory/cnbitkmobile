@@ -10,7 +10,7 @@
 	<recording>
 		<experimenter>EXPERIMENTER</experimenter>
 		<experiment>Cybathlon</experiment>
-		<project>Cybathlon</project>
+		<project>micontinuous</project>
 		<location>LOCATION</location>
 		<date>DATE</date>
 	</recording>
@@ -36,32 +36,49 @@
 	</protocol>
 
 	
-	<!-- Online Block -->
-	<online>
-		<mi description="Online MI" protocol="mi_control">
+	<!-- Offline Block -->
+	<offline>
+		<mi_mobile description="Offline MI mobile" protocol="mi_mobile_offline">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
-					<mi_both_hands>0.8</mi_both_hands>
+					<mi_both_hands>0.7</mi_both_hands>
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>2</mi_both_hands>
-					<mi_both_feet>2</mi_both_feet>
+					<mi_both_hands>4.0</mi_both_hands>
+					<mi_both_feet>2.0</mi_both_feet>
 				</trials>
+			</taskset>
+		</mi_mobile>
+	</offline>
 
+	<!-- Online Block -->
+	<online>
+		<mi_mobile description="Online MI mobile" protocol="mi_control">
+			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
+				<threshold>
+					<mi_both_hands>0.7</mi_both_hands>
+					<mi_both_feet>0.8</mi_both_feet>
+				</threshold>
+				<trials>
+					<mi_both_hands>4.0</mi_both_hands>
+					<mi_both_feet>2.0</mi_both_feet>
+				</trials>
 			</taskset>
 			
 			<!-- Old parameters - TO BE DELETED -->
-			<integration>0.97</integration>
-			<rejection>0.55</rejection>
+			<!-- <integration>0.97</integration>
+			<rejection>0.55</rejection> -->
 			
-			<!-- New feedback trial configuration -->
+			<!-- Felix feedback trial configuration -->
+			<!-- 
 			<trials>
 				<gdfevent_task0>0x6600</gdfevent_task0>
 				<n_tasks>6</n_tasks>
 				<repetitions>2</repetitions>
 			</trials>
-		</mi>
+			-->
+		</mi_mobile>
 	</online>
 	
 	<!-- New intergrator configuration -->			

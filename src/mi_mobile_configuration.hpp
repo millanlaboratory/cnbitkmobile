@@ -4,7 +4,7 @@
 #include <cnbicore/CcBasic.hpp>
 #include <cnbiconfig/CCfgConfig.hpp>
 
-typedef struct timing_struct {
+typedef struct {
 	float wait;
 	float begin;
 	float end;
@@ -15,9 +15,9 @@ typedef struct timing_struct {
 	float cfeedback;
 	float boom;
 	float timeout;
-} mitiming;
+} mitiming_t;
 
-typedef struct event_struct {
+typedef struct {
 	unsigned int wait;
 	unsigned int fixation;
 	unsigned int cfeedback;
@@ -25,17 +25,17 @@ typedef struct event_struct {
 	unsigned int hit;
 	unsigned int miss;
 	unsigned int timeout;
-} mievent;
+} mievent_t;
 
-typedef struct device_event_struct {
+typedef struct {
 	unsigned int start;
 	unsigned int stop;
 	unsigned int pause;
 	unsigned int quit;
-} devevent;
+} devevent_t;
 
 
-bool mi_mobile_get_timings(CCfgConfig* config, mitiming* timings) {
+bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 
 	try {
 		config->RootEx()->QuickEx("protocol/mi/")->SetBranch();
@@ -58,17 +58,17 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming* timings) {
 	}
 }
 
-bool mi_mobile_get_events(CCfgConfig* config, mievent* events) {
+bool mi_mobile_get_mi_events(CCfgConfig* config, mievent_t* mievents) {
 
 	try {
 		config->RootEx()->QuickEx("events/gdfevents/")->SetBranch();
-		events->wait		= config->BranchEx()->QuickGDFIntEx("wait");
-		events->fixation	= config->BranchEx()->QuickGDFIntEx("fixation");
-		events->cfeedback	= config->BranchEx()->QuickGDFIntEx("cfeedback");
-		events->off			= config->BranchEx()->QuickGDFIntEx("off");
-		events->hit			= config->BranchEx()->QuickGDFIntEx("hit");
-		events->miss		= config->BranchEx()->QuickGDFIntEx("miss");
-		events->timeout		= config->BranchEx()->QuickGDFIntEx("timeout");
+		mievents->wait		= config->BranchEx()->QuickGDFIntEx("wait");
+		mievents->fixation	= config->BranchEx()->QuickGDFIntEx("fixation");
+		mievents->cfeedback	= config->BranchEx()->QuickGDFIntEx("cfeedback");
+		mievents->off		= config->BranchEx()->QuickGDFIntEx("off");
+		mievents->hit		= config->BranchEx()->QuickGDFIntEx("targethit");
+		mievents->miss		= config->BranchEx()->QuickGDFIntEx("targetmiss");
+		mievents->timeout	= config->BranchEx()->QuickGDFIntEx("timeout");
 
 		return true;
 
@@ -78,7 +78,7 @@ bool mi_mobile_get_events(CCfgConfig* config, mievent* events) {
 	}
 }
 
-bool mi_mobile_get_device_events(CCfgConfig* config, devevent* devevents) {
+bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 
 	try {
 		config->RootEx()->QuickEx("events/gdfevents/")->SetBranch();
@@ -95,15 +95,20 @@ bool mi_mobile_get_device_events(CCfgConfig* config, devevent* devevents) {
 	}
 }
 
-bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset) {
+bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset, 
+						   const std::string& mode, const std::string& block) {
 
 	try {
+
+		config->RootEx()->QuickEx("tasksets/" + taskset->name)->SetBranch();
+		taskset->description = config->BranchEx()->GetAttrEx("description");
 		config->ParseTasksetEx(taskset->name, taskset);
+		config->ParseConfigEx(mode, block, taskset->name, taskset);
 		return true;
 
 	} catch(XMLException e) {
-		printf("error\n");
 		CcLogException(e.Info());
+		CcLogFatal("Taskset configuration failed");
 		return false;
 	}
 
