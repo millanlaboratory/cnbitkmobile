@@ -114,4 +114,39 @@ bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset,
 
 }
 
+bool mi_mobile_configure_copilot(cnbi::mobile::CmCopilot* copilot, CCfgTaskset* taskset) {
+
+	unsigned int ntrials;
+	float		 threshold;
+	bool		 hasconfig = true;
+
+	for(auto its=taskset->Begin(); its!=taskset->End(); ++its) {
+		
+		if(its->second->HasConfig("trials") == true) {
+			ntrials = (unsigned int)its->second->config["trials"].Int();
+		} else {
+			CcLogFatalS("Task " << its->second->gdf <<" does not have 'trials' field"); 
+			hasconfig = false;
+		}
+		
+		if(its->second->HasConfig("threshold") == true) {
+			threshold = its->second->config["threshold"].Float();
+		} else {
+			CcLogFatalS("Task " << its->second->gdf <<" does not have 'threshold' field"); 
+			hasconfig = false;
+		}
+
+		if(hasconfig == true) {
+			copilot->SetClass(its->second->gdf, ntrials, threshold);
+		} else {
+			CcLogFatalS("Cannot add " << its->second->gdf <<" to the copilot"); 
+		}
+	}
+	
+	if(hasconfig == true)
+		copilot->Generate();
+
+	return hasconfig;
+}
+
 #endif

@@ -5,14 +5,17 @@ lib_LTLIBRARIES = libcnbimobile.la
 #
 libcnbimobile_includedir = $(includedir)/cnbimobile
 libcnbimobile_include_HEADERS = CmEngine.hpp \
-								CmFeedback.hpp 
+								CmFeedback.hpp \
+								CmCopilot.hpp
 #								Integrator.hpp \
 #								Exponential.hpp
 
 libcnbimobile_la_SOURCES = CmEngine.hpp \
 						   CmEngine.cpp \
 						   CmFeedback.hpp \
-						   CmFeedback.cpp 
+						   CmFeedback.cpp \
+						   CmCopilot.hpp \
+						   CmCopilot.cpp
 #						   Integrator.hpp \
 #						   Integrator.cpp \
 #						   Exponential.hpp \

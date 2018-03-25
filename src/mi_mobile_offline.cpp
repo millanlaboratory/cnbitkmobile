@@ -7,6 +7,7 @@
 #include <cnbiloop/ClTobiId.hpp>
 
 #include "CmFeedback.hpp"
+#include "CmCopilot.hpp"
 #include "mi_mobile_configuration.hpp"
 
 #define CNBITK_MOBILE_HARD_LEFT 	1
@@ -35,6 +36,10 @@ int main(int argc, char** argv) {
 	mitiming_t*		timings   = nullptr;
 	mievent_t*		mievents  = nullptr;
 	devevent_t*		devevents = nullptr;
+
+	// Tools for Copilot configuration
+	cnbi::mobile::CmCopilot copilot;
+	unsigned int TrialIdx;
 	
 	// Tools for TOBI interfaces
 	IDMessage			idm;	
@@ -102,7 +107,7 @@ int main(int argc, char** argv) {
 	message = "MI events XML configuration...";
 	mievents = new mievent_t;
 	if(mi_mobile_get_mi_events(&config, mievents) == false) {
-		CcLogFatal(message + "failed.");
+		CcLogFatal(message + "failed.")
 		goto shutdown;
 	}
 	CcLogInfo(message + "done.");
@@ -115,6 +120,20 @@ int main(int argc, char** argv) {
 		goto shutdown;
 	}
 	CcLogInfo(message + "done.");
+
+	// Copilot configuration
+	message = "Copilot XML configuration...";
+	if(mi_mobile_configure_copilot(&copilot, taskset) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+
+	TrialIdx = 1;
+	for(auto it=copilot.Begin(); it!=copilot.End(); ++it) {
+		std::cout<<"Trial "<<TrialIdx<<", class="<<(*it)<<std::endl;
+		TrialIdx++;
+	}
 
 
 	CcCore::Exit(EXIT_SUCCESS);

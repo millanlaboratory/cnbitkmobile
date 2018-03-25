@@ -45,8 +45,8 @@
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>4.0</mi_both_hands>
-					<mi_both_feet>2.0</mi_both_feet>
+					<mi_both_hands>4</mi_both_hands>
+					<mi_both_feet>2</mi_both_feet>
 				</trials>
 			</taskset>
 		</mi_mobile>
@@ -61,8 +61,8 @@
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>4.0</mi_both_hands>
-					<mi_both_feet>2.0</mi_both_feet>
+					<mi_both_hands>4</mi_both_hands>
+					<mi_both_feet>2</mi_both_feet>
 				</trials>
 			</taskset>
 			
