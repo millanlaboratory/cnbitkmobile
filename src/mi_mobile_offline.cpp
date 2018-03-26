@@ -6,7 +6,7 @@
 #include <cnbiloop/ClLoop.hpp>
 #include <cnbiloop/ClTobiId.hpp>
 
-#include "CmFeedback.hpp"
+#include "CmWheel.hpp"
 #include "CmCopilot.hpp"
 #include "mi_mobile_configuration.hpp"
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 	std::string			idpipe("/bus");
 	
 	// Tools for feedback
-	cnbi::mobile::CmFeedback*	feedback = nullptr;
+	cnbi::mobile::CmWheel*	feedback = nullptr;
 	
 	// Initialization ClLoop
 	CcCore::OpenLogger(protocol);
@@ -129,16 +129,6 @@ int main(int argc, char** argv) {
 	}
 	CcLogInfo(message + "done.");
 
-	TrialIdx = 1;
-	for(auto it=copilot.Begin(); it!=copilot.End(); ++it) {
-		std::cout<<"Trial "<<TrialIdx<<", class="<<(*it)<<std::endl;
-		TrialIdx++;
-	}
-
-
-	CcCore::Exit(EXIT_SUCCESS);
-
-	
 	// Initialization TobiId
 	id  = new ClTobiId(ClTobiId::SetGet);
 	ids = new IDSerializerRapid(&idm);
@@ -146,23 +136,39 @@ int main(int argc, char** argv) {
 	idm.SetFamilyType(IDMessage::FamilyBiosig);
 	idm.SetEvent(0);
 
-
 	// Attach Id to /bus
-	CcLogInfoS("Connecting Id to "<< idpipe <<"...");
+	message = "Connecting Id to " + idpipe + "...";
 	if(id->Attach(idpipe) == false) {
-		CcLogFatalS("Cannot attach Id to "<<idpipe);
+		CcLogFatalS(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo("Id connected");
+	CcLogInfo(message + "done.");
 	
 	// Initialization feedback
-	feedback = new cnbi::mobile::CmFeedback();
+	feedback = new cnbi::mobile::CmWheel();
 	feedback->Start();
+	CcTime::Sleep(timings->begin);
 
 	// Start main loop
-	while(true) {
+	TrialIdx = 1;
+	for(auto it=copilot.Begin(); it!=copilot.End(); ++it) {
 
+		CcLogInfoS("Trial " << TrialIdx << "/" << copilot.GetNumberTrial() << ", GDF=" << (*it));
+		TrialIdx++;
+		
+		// Fixation
+		feedback->Show(cnbi::mobile::Feedback::Fixation);
+		CcTime::Sleep(1000.0f);
+
+		// Cue
+		feedback->Show(cnbi::mobile::Feedback::Cue);
+		CcTime::Sleep(1000.0f);
+
+		// Continuous Feedback
+		
+		
 		feedback->Reset();
+		CcTime::Sleep(1000.0f);
 
 		/*
 		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage) {

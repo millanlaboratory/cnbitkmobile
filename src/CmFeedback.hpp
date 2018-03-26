@@ -45,6 +45,7 @@ class CmFeedback : public CmEngine {
 		dtk_hshape  llimit_;
 		dtk_hshape  rlimit_;
 		dtk_hshape  fix_;
+		dtk_hshape	cue_;
 		float* 	vertices_;
 		float*  colors_;
 		unsigned int* indices_;

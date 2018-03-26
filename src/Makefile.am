@@ -4,13 +4,16 @@ AM_CXXFLAGS = -std=c++11
 lib_LTLIBRARIES = libcnbimobile.la
 #
 libcnbimobile_includedir = $(includedir)/cnbimobile
-libcnbimobile_include_HEADERS = CmEngine.hpp \
+libcnbimobile_include_HEADERS = CmWheel.hpp \	
+								CmEngine.hpp \
 								CmFeedback.hpp \
 								CmCopilot.hpp
 #								Integrator.hpp \
 #								Exponential.hpp
 
-libcnbimobile_la_SOURCES = CmEngine.hpp \
+libcnbimobile_la_SOURCES = CmWheel.hpp \
+						   CmWheel.cpp \
+						   CmEngine.hpp \
 						   CmEngine.cpp \
 						   CmFeedback.hpp \
 						   CmFeedback.cpp \
@@ -21,7 +24,7 @@ libcnbimobile_la_SOURCES = CmEngine.hpp \
 #						   Exponential.hpp \
 #						   Exponential.cpp
 #
-libcnbimobile_la_LIBADD = -ldrawtk -lSDL -lcnbicore -lcnbiconfig
+libcnbimobile_la_LIBADD = -ldrawtk -lSDL -lcnbicore -lcnbiconfig -lcnbidraw
 libcnbimobile_la_LDFLAGS = $(AM_CFLAGS) \
 						-version-info $(CURRENT):$(REVISION):$(AGE)
 
@@ -33,7 +36,8 @@ bin_PROGRAMS = mi_mobile_offline \
 			   
 mi_mobile_offline_SOURCES = mi_mobile_offline.cpp
 mi_mobile_offline_LDADD = -lcnbicore -lcnbiloop -ltobicore \
-						   -ltobiid -lcnbiconfig -lcnbimobile 
+						   -ltobiid -lcnbiconfig -lcnbimobile \
+						   -lcnbidraw
 
 smrinc_robotino_run_generator_SOURCES = smrinc_robotino_run_generator.cpp
 
