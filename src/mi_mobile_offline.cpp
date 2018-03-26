@@ -146,6 +146,8 @@ int main(int argc, char** argv) {
 	
 	// Initialization feedback
 	feedback = new cnbi::mobile::CmWheel();
+
+	feedback->ConfigureTaskset(taskset);
 	feedback->Start();
 	CcTime::Sleep(timings->begin);
 

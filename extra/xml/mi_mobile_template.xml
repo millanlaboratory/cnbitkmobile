@@ -41,7 +41,7 @@
 		<mi_mobile description="Offline MI mobile" protocol="mi_mobile_offline">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
-					<mi_both_hands>0.7</mi_both_hands>
+					<mi_both_hands>0.95</mi_both_hands>
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
