@@ -32,11 +32,18 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = cnbimobile.pc
 
 bin_PROGRAMS = mi_mobile_offline \
+			   mi_mobile_online \
 			   smrinc_robotino_run_generator
 			   
 mi_mobile_offline_SOURCES = mi_mobile_offline.cpp
 mi_mobile_offline_LDADD = -lcnbicore -lcnbiloop -ltobicore \
 						   -ltobiid -lcnbiconfig -lcnbimobile \
+						   -lcnbidraw
+
+mi_mobile_online_SOURCES = mi_mobile_online.cpp
+mi_mobile_online_LDADD 	 = -lcnbicore -lcnbiloop -ltobicore \
+						   -ltobiid -ltobiic -lcnbiconfig \
+						   -lcnbimobile -lcnbiprotocol \
 						   -lcnbidraw
 
 smrinc_robotino_run_generator_SOURCES = smrinc_robotino_run_generator.cpp

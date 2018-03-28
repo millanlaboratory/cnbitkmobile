@@ -109,6 +109,10 @@ bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset,
 		taskset->description = config->BranchEx()->GetAttrEx("description");
 		config->ParseTasksetEx(taskset->name, taskset);
 		config->ParseConfigEx(mode, block, taskset->name, taskset);
+
+		if(mode.compare("online") == 0) 
+			config->ParseClassifierEx(block, taskset->name, taskset, nullptr, nullptr);
+
 		return true;
 
 	} catch(XMLException e) {
@@ -116,7 +120,6 @@ bool mi_mobile_get_taskset(CCfgConfig* config, CCfgTaskset* taskset,
 		CcLogFatal("Taskset configuration failed");
 		return false;
 	}
-
 }
 
 bool mi_mobile_configure_copilot(cnbi::mobile::CmCopilot* copilot, CCfgTaskset* taskset) {

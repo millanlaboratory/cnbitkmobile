@@ -169,6 +169,8 @@ void CmWheel::ShowCue(unsigned int taskId) {
 
 void CmWheel::ShowText(std::string text, float x, float y) {
 
+	this->fix_->Hide();
+	this->cue_->Hide();
 	this->text_->SetText(text);
 	this->text_->Show();
 }

@@ -30,7 +30,7 @@
 				<cue>1000.00</cue>
 				<cfeedback>4000.00</cfeedback>
 				<boom>1000.00</boom>
-				<timeout>10000.00</timeout>
+				<timeout>6000.00</timeout>
 				<device>2000.00</device>
 			</trial>
 		</mi>
@@ -55,21 +55,21 @@
 
 	<!-- Online Block -->
 	<online>
-		<mi_mobile description="Online MI mobile" protocol="mi_control">
+		<mi_mobile description="Online MI mobile" protocol="mi_mobile_online">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
-					<mi_both_hands>0.7</mi_both_hands>
+					<mi_both_hands>0.8</mi_both_hands>
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>4</mi_both_hands>
-					<mi_both_feet>2</mi_both_feet>
+					<mi_both_hands>5</mi_both_hands>
+					<mi_both_feet>5</mi_both_feet>
 				</trials>
 			</taskset>
 			
 			<!-- Old parameters - TO BE DELETED -->
-			<!-- <integration>0.97</integration>
-			<rejection>0.55</rejection> -->
+			<integration>0.97</integration>
+			<rejection>0.55</rejection> 
 			
 			<!-- Felix feedback trial configuration -->
 			<!-- 

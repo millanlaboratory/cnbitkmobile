@@ -11,6 +11,7 @@ m4/*
 *.pyc
 core
 mi_mobile_offline
+mi_mobile_online
 smrinc_robotino_run_generator
 *.swp
 *.swo
