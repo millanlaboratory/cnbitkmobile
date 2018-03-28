@@ -10,22 +10,31 @@ CmCopilot::CmCopilot(void) {}
 CmCopilot::~CmCopilot(void) {}
 
 
-bool CmCopilot::SetClass(unsigned int id, unsigned noccurence, float threshold) {
+bool CmCopilot::SetClass(unsigned int taskid, unsigned int classid, unsigned noccurence, float threshold) {
 
 	std::pair<std::map<unsigned int, unsigned int>::iterator, bool> reto;
+	std::pair<std::map<unsigned int, unsigned int>::iterator, bool> retc;
 	std::pair<std::map<unsigned int, float>::iterator, bool> rett;
 
 	// Add class occurences
-	reto = this->occurences_.insert( std::pair<unsigned int, unsigned int>(id, noccurence) );
+	reto = this->occurences_.insert( std::pair<unsigned int, unsigned int>(taskid, noccurence) );
 
 	if(reto.second == false)
 		return false;
 
 	// Add class threshold
-	rett = this->thresholds_.insert( std::pair<unsigned int, float>(id, threshold) );
+	rett = this->thresholds_.insert( std::pair<unsigned int, float>(taskid, threshold) );
 	
 	if(rett.second == false)
 		return false;
+	
+	// Add class id
+	retc = this->classes_.insert( std::pair<unsigned int, unsigned int>(taskid, classid) );
+	
+	if(retc.second == false)
+		return false;
+
+	return true;
 
 }
 
@@ -38,12 +47,12 @@ unsigned int CmCopilot::GetNumberTrial(void) {
 	return ntrials;
 }
 
-unsigned int CmCopilot::GetNumberTrial(unsigned int id) {
+unsigned int CmCopilot::GetNumberTrial(unsigned int taskid) {
 
 	unsigned int ntrials = 0;
 	std::map<unsigned int, unsigned int>::iterator it;
 
-	it = this->occurences_.find(id);
+	it = this->occurences_.find(taskid);
 
 	if(it != this->occurences_.end())
 		ntrials = it->second;
@@ -51,17 +60,48 @@ unsigned int CmCopilot::GetNumberTrial(unsigned int id) {
 	return ntrials;
 }
 
-float CmCopilot::GetThreshold(unsigned int id) {
+float CmCopilot::GetThreshold(unsigned int taskid) {
 
 	float threshold = 0.0f;
 	std::map<unsigned int, float>::iterator it;
 
-	it = this->thresholds_.find(id);
+	it = this->thresholds_.find(taskid);
 
 	if(it != this->thresholds_.end())
 		threshold = it->second;
 
 	return threshold;
+}
+
+unsigned int CmCopilot::GetClass(unsigned int taskid) {
+
+	unsigned int classid = 0;
+	std::map<unsigned int, unsigned int>::iterator it;	
+
+	it = this->classes_.find(taskid);
+
+	if(it != this->classes_.end())
+		classid = it->second;
+
+	return classid;
+}
+
+float CmCopilot::GetStep(unsigned int taskid, float time, float update) {
+
+	float threshold = 0.5f;
+	float length, step;
+	std::map<unsigned int, float>::iterator it;
+
+	it = this->thresholds_.find(taskid);
+
+	if(it != this->thresholds_.end())
+		threshold = it->second;
+
+	length = threshold - 0.5f;
+
+	step = (length*update)/time;
+
+	return step;
 }
 
 bool CmCopilot::Generate(void) {

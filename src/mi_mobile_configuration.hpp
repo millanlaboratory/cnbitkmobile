@@ -3,6 +3,7 @@
 
 #include <cnbicore/CcBasic.hpp>
 #include <cnbiconfig/CCfgConfig.hpp>
+#include "CmWheel.hpp"
 
 typedef struct {
 	float wait;
@@ -15,6 +16,7 @@ typedef struct {
 	float cfeedback;
 	float boom;
 	float timeout;
+	float device;
 } mitiming_t;
 
 typedef struct {
@@ -28,6 +30,7 @@ typedef struct {
 } mievent_t;
 
 typedef struct {
+	unsigned int device;
 	unsigned int start;
 	unsigned int stop;
 	unsigned int pause;
@@ -49,6 +52,7 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 		timings->cfeedback	= config->BranchEx()->QuickFloatEx("trial/cfeedback");
 		timings->boom		= config->BranchEx()->QuickFloatEx("trial/boom");
 		timings->timeout	= config->BranchEx()->QuickFloatEx("trial/timeout");
+		timings->device		= config->BranchEx()->QuickFloatEx("trial/device");
 
 		return true;
 
@@ -82,6 +86,7 @@ bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 
 	try {
 		config->RootEx()->QuickEx("events/gdfevents/")->SetBranch();
+		devevents->device	= config->BranchEx()->QuickGDFIntEx("device");
 		devevents->start	= config->BranchEx()->QuickGDFIntEx("start");
 		devevents->stop		= config->BranchEx()->QuickGDFIntEx("stop");
 		devevents->pause	= config->BranchEx()->QuickGDFIntEx("pause");
@@ -137,7 +142,7 @@ bool mi_mobile_configure_copilot(cnbi::mobile::CmCopilot* copilot, CCfgTaskset* 
 		}
 
 		if(hasconfig == true) {
-			copilot->SetClass(its->second->gdf, ntrials, threshold);
+			copilot->SetClass(its->second->id, its->second->gdf, ntrials, threshold);
 		} else {
 			CcLogFatalS("Cannot add " << its->second->gdf <<" to the copilot"); 
 		}
@@ -147,6 +152,21 @@ bool mi_mobile_configure_copilot(cnbi::mobile::CmCopilot* copilot, CCfgTaskset* 
 		copilot->Generate();
 
 	return hasconfig;
+}
+
+bool mi_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskset) {
+
+	bool res = true;
+	for(auto it=taskset->Begin(); it!=taskset->End(); ++it) {
+
+		if(it->second->HasConfig("threshold") == true) {
+			wheel->SetThreshold(it->second->id, it->second->config["threshold"].Float());
+		} else {
+			CcLogFatalS("Task " << it->second->gdf <<" does not have 'threshold' field"); 
+			res = false;
+		}
+	}
+	return res;
 }
 
 #endif

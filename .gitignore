@@ -7,3 +7,11 @@ config.log
 config.status
 configure
 libtool
+m4/*
+*.pyc
+core
+mi_mobile_offline
+smrinc_robotino_run_generator
+*.swp
+*.swo
+python/Feedback/build/

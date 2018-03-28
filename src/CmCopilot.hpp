@@ -17,11 +17,13 @@ class CmCopilot {
 		virtual ~CmCopilot(void);
 
 
-		bool SetClass(unsigned int id, unsigned int noccurence, float threshold);
+		bool SetClass(unsigned int taskid, unsigned int classid, unsigned int noccurence, float threshold);
 
 		unsigned int GetNumberTrial(void);
-		unsigned int GetNumberTrial(unsigned int id);
-		float GetThreshold(unsigned int id);
+		unsigned int GetNumberTrial(unsigned int taskid);
+		float GetThreshold(unsigned int taskid);
+		unsigned int GetClass(unsigned int taskid);
+		float GetStep(unsigned int taskid, float time, float update);
 
 		bool Generate(void);
 
@@ -33,14 +35,10 @@ class CmCopilot {
 	private:
 		std::map<unsigned int, unsigned int>	occurences_;
 		std::map<unsigned int, float>			thresholds_;
+		std::map<unsigned int, unsigned int>	classes_;
 		std::vector<unsigned int>				trials_;
 
-
 };
-
-
 	}
 }
-
-
 #endif

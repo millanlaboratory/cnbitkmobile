@@ -2,16 +2,13 @@
 #define CNBI_MI_MOBILE_OFFLINE_HPP
 
 #include <getopt.h>
-
+#include <cnbicore/CcTime.hpp>
 #include <cnbiloop/ClLoop.hpp>
 #include <cnbiloop/ClTobiId.hpp>
 
 #include "CmWheel.hpp"
 #include "CmCopilot.hpp"
 #include "mi_mobile_configuration.hpp"
-
-#define CNBITK_MOBILE_HARD_LEFT 	1
-#define CNBITK_MOBILE_HARD_RIGHT 	2
 
 void usage(void) { 
 	printf("Usage: mi_mobile_offline [OPTION]\n\n");
@@ -40,6 +37,8 @@ int main(int argc, char** argv) {
 	// Tools for Copilot configuration
 	cnbi::mobile::CmCopilot copilot;
 	unsigned int TrialIdx;
+	unsigned int TaskIdx;
+	unsigned int ClassIdx;
 	
 	// Tools for TOBI interfaces
 	IDMessage			idm;	
@@ -49,6 +48,10 @@ int main(int argc, char** argv) {
 	
 	// Tools for feedback
 	cnbi::mobile::CmWheel*	feedback = nullptr;
+	float value, step;
+	float fdb_update = 10.0f;
+	int hitclass;
+	CcTimeValue tic;
 	
 	// Initialization ClLoop
 	CcCore::OpenLogger(protocol);
@@ -56,7 +59,7 @@ int main(int argc, char** argv) {
 	CcCore::CatchSIGTERM();
 	ClLoop::Configure();
 
-	// Connection to ClLoop
+	/**** Connection to ClLoop ****/
 	message = "Connecting to loop...";
 	if(ClLoop::Connect() == false) {
 		CcLogFatal(message + "failed.");
@@ -64,7 +67,7 @@ int main(int argc, char** argv) {
 	}	
 	CcLogInfo(message + "done.");
 	
-	// Getting general parameters from nameserver
+	/**** Getting general parameters from nameserver ****/
 	xfile		= ClLoop::nms.RetrieveConfig(nmscomponent, "xml");
 	xmode		= ClLoop::nms.RetrieveConfig(nmscomponent, "modality");
 	xblock		= ClLoop::nms.RetrieveConfig(nmscomponent, "block");
@@ -72,7 +75,7 @@ int main(int argc, char** argv) {
 	CcLogConfigS("Modality=" << xmode << ", Block=" << xblock << 
 				 ", Taskset=" << xtaskset << ", Configuration=" << xfile);
 
-	// Importing XML configuration
+	/**** Configuration from XML ****/
 	message = "Importing XML configuration...";
 	try {
 		config.ImportFileEx(xfile);
@@ -81,148 +84,185 @@ int main(int argc, char** argv) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
-
-	// Configuration from XML
+	CcLogConfig(message + "done.");
 	
-	// Taskset configuration
+	/** Taskset configuration **/
 	message = "Taskset XML configuration...";
 	taskset = new CCfgTaskset(xtaskset);
 	if(mi_mobile_get_taskset(&config, taskset, xmode, xblock) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
+	CcLogConfig(message + "done.");
 
-	// Timings configuration
+	/** Timings configuration **/
 	message = "Timings XML configuration...";
 	timings = new mitiming_t;
 	if(mi_mobile_get_timings(&config, timings) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
+	CcLogConfig(message + "done.");
 	
-	// MI events configuration
+	/** MI events configuration **/
 	message = "MI events XML configuration...";
 	mievents = new mievent_t;
 	if(mi_mobile_get_mi_events(&config, mievents) == false) {
 		CcLogFatal(message + "failed.")
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
+	CcLogConfig(message + "done.");
 
-	// Device events configuration
+	/** Device events configuration **/
 	message = "Device events XML configuration...";
 	devevents = new devevent_t;
 	if(mi_mobile_get_device_events(&config, devevents) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
+	CcLogConfig(message + "done.");
 
-	// Copilot configuration
+	/** Copilot configuration **/
 	message = "Copilot XML configuration...";
 	if(mi_mobile_configure_copilot(&copilot, taskset) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
-	CcLogInfo(message + "done.");
+	CcLogConfig(message + "done.");
+	
+	/** Wheel feedback configuration **/
+	message = "Feedback XML configuration...";
+	feedback = new cnbi::mobile::CmWheel();
+	if(mi_mobile_configure_wheel(feedback, taskset) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogConfig(message + "done.");
 
-	// Initialization TobiId
+	/**** Initialization TobiId ****/
 	id  = new ClTobiId(ClTobiId::SetGet);
 	ids = new IDSerializerRapid(&idm);
 	idm.SetDescription(protocol);
 	idm.SetFamilyType(IDMessage::FamilyBiosig);
 	idm.SetEvent(0);
 
-	// Attach Id to /bus
-	message = "Connecting Id to " + idpipe + "...";
+	/**** Attach Id to /bus ****/
+	message = "Connecting TiD to " + idpipe + "...";
 	if(id->Attach(idpipe) == false) {
 		CcLogFatalS(message + "failed.");
 		goto shutdown;
 	}
 	CcLogInfo(message + "done.");
 	
-	// Initialization feedback
-	feedback = new cnbi::mobile::CmWheel();
-
-	feedback->ConfigureTaskset(taskset);
+	/**** Feedback starting ****/
 	feedback->Start();
+
+	CcLogInfo("Waiting for user...");
+	feedback->ShowText("Press SPACE");
+	while(feedback->IsStartRequested() == false) {
+		if(feedback->IsQuitRequested() == true) {
+			CcLogWarning("User asked to quit");
+			goto shutdown;
+		}
+		CcTime::Sleep(100.0f);
+	}
+	CcLogInfo("User asked to start");
+	feedback->ShowText("");
+	
+
 	CcTime::Sleep(timings->begin);
 
-	// Start main loop
-	TrialIdx = 1;
+	/**** Start main loop ****/
+	TrialIdx = 0;
+	TaskIdx  = 0;
+	ClassIdx = 0;
+	CcTime::Tic(&tic);
 	for(auto it=copilot.Begin(); it!=copilot.End(); ++it) {
-
-		CcLogInfoS("Trial " << TrialIdx << "/" << copilot.GetNumberTrial() << ", GDF=" << (*it));
+		TaskIdx	 = (unsigned int)(*it);
+		ClassIdx = copilot.GetClass((*it));
 		TrialIdx++;
-		
+		feedback->ShowText("Trial " + std::to_string(TrialIdx) + "/" 
+							+ std::to_string(copilot.GetNumberTrial()));
+
+		CcLogInfoS("Trial " << TrialIdx << "/" << copilot.GetNumberTrial() <<
+				   ", Id=" << TaskIdx << ", GDF=" << ClassIdx);
+	
+		// Wait
+		idm.SetEvent(mievents->wait);
+		id->SetMessage(ids);
+		CcTime::Sleep(timings->waitmin, timings->waitmax);
+		idm.SetEvent(mievents->wait + mievents->off);
+		id->SetMessage(ids);
+
 		// Fixation
-		feedback->Show(cnbi::mobile::Feedback::Fixation);
-		CcTime::Sleep(1000.0f);
+		idm.SetEvent(mievents->fixation);
+		id->SetMessage(ids);
+		feedback->ShowFixation();
+		CcTime::Sleep(timings->fixation);
+		idm.SetEvent(mievents->fixation + mievents->off);
+		id->SetMessage(ids);
 
 		// Cue
-		feedback->Show(cnbi::mobile::Feedback::Cue);
-		CcTime::Sleep(1000.0f);
+		idm.SetEvent(ClassIdx);
+		id->SetMessage(ids);
+		feedback->ShowCue(TaskIdx);
+		CcTime::Sleep(timings->cue);
+		idm.SetEvent(ClassIdx + mievents->off);
+		id->SetMessage(ids);
 
 		// Continuous Feedback
-		
-		
-		feedback->Reset();
-		CcTime::Sleep(1000.0f);
-
-		/*
-		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage) {
-			
-			// Check the frame idx of the new message (SYNC TO BE CHECKED)
-			if(icm.GetBlockIdx() < fidx && icm.GetBlockIdx() != TCBlock::BlockIdxUnset)
-				continue;
-
-			// Update the feedback position
-			feedback->Update(icm.GetValue(iccname, icclabel));
-			
-			while(id->GetMessage(ids) == true) {
-				
-				switch(idm.GetEvent()) {
-					case CNBITK_MOBILE_HARD_LEFT:
-						feedback->Hard(cnbi::mobile::CmFeedback::ToLeft);
-						CcLogInfo("Hard decision towards Left");
-						hard = true;
-						break;
-					case CNBITK_MOBILE_HARD_RIGHT:
-						feedback->Hard(cnbi::mobile::CmFeedback::ToRight);
-						CcLogInfo("Hard decision towards Right");
-						hard = true;
-						break;
-					default:
-						hard = false;
-						break;
-				}
-			
-			}
-			
-			if(hard == true) {
-				CcTime::Sleep(1000.0f);
-				feedback->Reset();
+		value = 0.5f;	
+		step = copilot.GetStep(TaskIdx, timings->cfeedback, fdb_update);
+		idm.SetEvent(mievents->cfeedback);
+		id->SetMessage(ids);
+		while(true) {
+			hitclass = feedback->Update(value);
+			if( hitclass != -1) {
 				break;
 			}
-			
-			if(ClLoop::IsConnected() == false) {
-				CcLogFatal("Cannot connect to loop");
-				goto shutdown;
-			}
-			
-			if(CcCore::receivedSIGAny.Get()) {
-				CcLogWarning("User asked to go down");
-				goto shutdown;
-			}
-
+			value = value - step*(1.0f - 2.0f*TaskIdx);
+			CcTime::Sleep(fdb_update);
 		}
-	*/
+		idm.SetEvent(mievents->cfeedback + mievents->off);
+		id->SetMessage(ids);
+
+		// Boom
+		idm.SetEvent(mievents->hit);
+		id->SetMessage(ids);
+		feedback->Hard(hitclass);
+		CcLogInfoS("Threshold reached for class "<< copilot.GetClass(hitclass));
+		CcTime::Sleep(timings->boom);
+		idm.SetEvent(mievents->hit + mievents->off);
+		id->SetMessage(ids);
+
+		// Device
+		idm.SetEvent(devevents->device + copilot.GetClass(hitclass));
+		id->SetMessage(ids);
+		CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
+		CcTime::Sleep(timings->device);
+
+		// Reset feedback
+		feedback->Reset();
+	
+		// Interrupts for exit
+		if(ClLoop::IsConnected() == false) {
+			CcLogFatal("Cannot connect to loop");
+			goto shutdown;
+		}
+		
+		if(CcCore::receivedSIGAny.Get()) {
+			CcLogWarning("User asked to go down");
+			goto shutdown;
+		}
+		
+		if(feedback->IsQuitRequested() == true) {
+			CcLogWarning("User asked to quit");
+			goto shutdown;
+		}
+		
 	}
-
-
+	printf("Elapsed: %f [ms]\n", CcTime::Toc(&tic));
+	CcTime::Sleep(timings->end);
 
 shutdown:
 

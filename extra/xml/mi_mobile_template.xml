@@ -31,6 +31,7 @@
 				<cfeedback>4000.00</cfeedback>
 				<boom>1000.00</boom>
 				<timeout>10000.00</timeout>
+				<device>2000.00</device>
 			</trial>
 		</mi>
 	</protocol>
@@ -41,12 +42,12 @@
 		<mi_mobile description="Offline MI mobile" protocol="mi_mobile_offline">
 			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
 				<threshold>
-					<mi_both_hands>0.95</mi_both_hands>
+					<mi_both_hands>0.8</mi_both_hands>
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>4</mi_both_hands>
-					<mi_both_feet>2</mi_both_feet>
+					<mi_both_hands>15</mi_both_hands>
+					<mi_both_feet>15</mi_both_feet>
 				</trials>
 			</taskset>
 		</mi_mobile>
@@ -259,6 +260,7 @@
 			<targethit>0x0381</targethit>
 			<targetmiss>0x0382</targetmiss>
 			<timeout>0x0383</timeout>
+			<device>0x6000</device>
 			<start>0x6301</start>
 			<stop>0x6302</stop>
 			<pause>0x6309</pause>
