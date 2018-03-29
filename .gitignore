@@ -12,6 +12,7 @@ m4/*
 core
 mi_mobile_offline
 mi_mobile_online
+mi_mobile_control
 smrinc_robotino_run_generator
 *.swp
 *.swo

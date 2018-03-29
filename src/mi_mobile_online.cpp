@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
 	CCfgTaskset*	taskset   = nullptr;
 	mitiming_t*		timings   = nullptr;
 	mievent_t*		mievents  = nullptr;
+	devtiming_t*	devtimings = nullptr;
 	devevent_t*		devevents = nullptr;
 
 	// Tools for Copilot configuration
@@ -135,6 +136,15 @@ int main(int argc, char** argv) {
 	message = "Device events XML configuration...";
 	devevents = new devevent_t;
 	if(mi_mobile_get_device_events(&config, devevents) == false) {
+		CcLogFatal(message + "failed.");
+		goto shutdown;
+	}
+	CcLogConfig(message + "done.");
+
+	/** Device timings configuration **/
+	message = "Device timings XML configuration...";
+	devtimings = new devtiming_t;
+	if(mi_mobile_get_device_timings(&config, devtimings) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
@@ -357,7 +367,7 @@ int main(int argc, char** argv) {
 			idm.SetEvent(devevents->device + copilot.GetClass(hitclass));
 			id->SetMessage(ids);
 			CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
-			CcTime::Sleep(timings->device);
+			CcTime::Sleep(devtimings->afterdiscrete);
 		} else {
 			idm.SetEvent(mievents->miss);
 			id->SetMessage(ids);

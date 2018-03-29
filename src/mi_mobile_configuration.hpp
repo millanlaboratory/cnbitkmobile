@@ -30,6 +30,12 @@ typedef struct {
 } mievent_t;
 
 typedef struct {
+	float wait;
+	float fixation;
+	float afterdiscrete;
+} devtiming_t;
+
+typedef struct {
 	unsigned int device;
 	unsigned int start;
 	unsigned int stop;
@@ -52,7 +58,6 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 		timings->cfeedback	= config->BranchEx()->QuickFloatEx("trial/cfeedback");
 		timings->boom		= config->BranchEx()->QuickFloatEx("trial/boom");
 		timings->timeout	= config->BranchEx()->QuickFloatEx("trial/timeout");
-		timings->device		= config->BranchEx()->QuickFloatEx("trial/device");
 
 		return true;
 
@@ -82,6 +87,21 @@ bool mi_mobile_get_mi_events(CCfgConfig* config, mievent_t* mievents) {
 	}
 }
 
+bool mi_mobile_get_device_timings(CCfgConfig* config, devtiming_t* timings) {
+
+	try {
+		config->RootEx()->QuickEx("protocol/mi/")->SetBranch();
+		timings->wait			= config->BranchEx()->QuickFloatEx("device/wait");
+		timings->fixation		= config->BranchEx()->QuickFloatEx("device/fixation");
+		timings->afterdiscrete	= config->BranchEx()->QuickFloatEx("device/afterdiscrete");
+
+		return true;
+
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		return false;
+	}
+}
 bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 
 	try {

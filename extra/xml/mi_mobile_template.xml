@@ -31,8 +31,12 @@
 				<cfeedback>4000.00</cfeedback>
 				<boom>1000.00</boom>
 				<timeout>6000.00</timeout>
-				<device>2000.00</device>
 			</trial>
+			<device>
+				<wait>1000.0</wait>
+				<fixation>0.0</fixation>
+				<afterdiscrete>2000.0</afterdiscrete>
+			</device>
 		</mi>
 	</protocol>
 
@@ -62,23 +66,30 @@
 					<mi_both_feet>0.8</mi_both_feet>
 				</threshold>
 				<trials>
-					<mi_both_hands>5</mi_both_hands>
-					<mi_both_feet>5</mi_both_feet>
+					<mi_both_hands>15</mi_both_hands>
+					<mi_both_feet>15</mi_both_feet>
 				</trials>
 			</taskset>
 			
-			<!-- Old parameters - TO BE DELETED -->
 			<integration>0.97</integration>
 			<rejection>0.55</rejection> 
 			
-			<!-- Felix feedback trial configuration -->
-			<!-- 
-			<trials>
-				<gdfevent_task0>0x6600</gdfevent_task0>
-				<n_tasks>6</n_tasks>
-				<repetitions>2</repetitions>
-			</trials>
-			-->
+		</mi_mobile>
+	</online>
+	
+	<!-- Control Block -->
+	<online>
+		<mi_mobile description="Control MI mobile" protocol="mi_mobile_control">
+			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
+				<threshold>
+					<mi_both_hands>0.8</mi_both_hands>
+					<mi_both_feet>0.8</mi_both_feet>
+				</threshold>
+			</taskset>
+			
+			<integration>0.97</integration>
+			<rejection>0.55</rejection> 
+			
 		</mi_mobile>
 	</online>
 	

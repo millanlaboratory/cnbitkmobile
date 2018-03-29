@@ -33,6 +33,7 @@ pkgconfig_DATA = cnbimobile.pc
 
 bin_PROGRAMS = mi_mobile_offline \
 			   mi_mobile_online \
+			   mi_mobile_control \
 			   smrinc_robotino_run_generator
 			   
 mi_mobile_offline_SOURCES = mi_mobile_offline.cpp
@@ -42,6 +43,12 @@ mi_mobile_offline_LDADD = -lcnbicore -lcnbiloop -ltobicore \
 
 mi_mobile_online_SOURCES = mi_mobile_online.cpp
 mi_mobile_online_LDADD 	 = -lcnbicore -lcnbiloop -ltobicore \
+						   -ltobiid -ltobiic -lcnbiconfig \
+						   -lcnbimobile -lcnbiprotocol \
+						   -lcnbidraw
+
+mi_mobile_control_SOURCES = mi_mobile_control.cpp
+mi_mobile_control_LDADD   = -lcnbicore -lcnbiloop -ltobicore \
 						   -ltobiid -ltobiic -lcnbiconfig \
 						   -lcnbimobile -lcnbiprotocol \
 						   -lcnbidraw
