@@ -16,15 +16,36 @@
 
 void usage(void) { 
 	printf("Usage: mi_mobile_offline [OPTION]\n\n");
-	printf("  -h       display this help and exit\n");
-	CcCore::Exit(EXIT_SUCCESS);
+	printf("\t-a\t\taddress of the nameserver in ip:port format (default: 127.0.0.1:8123)\n");
+	printf("\t-c\t\tname of the component to be retrieved from nameserver. It also represents\n"
+		   "\t  \t\tthe block in xml and in the TiC message (default: 'mi')\n");
+	printf("\t-h\t\tdisplay this help and exit\n");
 }
 
 int main(int argc, char** argv) {
 	
+	// Optional argument
+	int opt;
+	std::string optaddress("127.0.0.1:8123");
+	std::string	optcomponent("mi");
+
+	while((opt = getopt(argc, argv, "a:c:")) != -1) {
+		switch(opt) {
+			case 'a':
+				optaddress.assign(optarg);
+				break;
+			case 'c':
+				optcomponent.assign(optarg);
+				break;
+			case '?':
+				usage();
+				exit(opt == 'h' ? EXIT_SUCCESS : EXIT_FAILURE);
+		}
+	}
+
 	// Generic variables
-	const std::string	nmscomponent("mi_mobile");
 	const std::string	protocol("mi_mobile_control");
+	const std::string	nmscomponent(optcomponent);
 	std::string			message;
 
 	// Tools for XML configuration
@@ -76,7 +97,7 @@ int main(int argc, char** argv) {
 	CcCore::OpenLogger(protocol);
 	CcCore::CatchSIGINT();
 	CcCore::CatchSIGTERM();
-	ClLoop::Configure();
+	ClLoop::Configure(optaddress);
 
 	/**** Connection to ClLoop ****/
 	message = "Connecting to loop...";
@@ -150,14 +171,6 @@ int main(int argc, char** argv) {
 	}
 	CcLogConfig(message + "done.");
 
-	///** Copilot configuration **/
-	//message = "Copilot XML configuration...";
-	//if(mi_mobile_configure_copilot(&copilot, taskset) == false) {
-	//	CcLogFatal(message + "failed.");
-	//	goto shutdown;
-	//}
-	//CcLogConfig(message + "done.");
-	
 	/** Wheel feedback configuration **/
 	message = "Feedback XML configuration...";
 	feedback = new cnbi::mobile::CmWheel();
@@ -179,6 +192,7 @@ int main(int argc, char** argv) {
 	idm.SetEvent(0);
 	CcLogConfig(message + "done.");
 
+	printf("%s\n", taskset->ndf.id.c_str());
 	/**** Attach Id ****/
 	message = "Connecting TiD to " + taskset->ndf.id + "...";
 	if(id->Attach(taskset->ndf.id) == false) {

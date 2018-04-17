@@ -12,15 +12,36 @@
 
 void usage(void) { 
 	printf("Usage: mi_mobile_offline [OPTION]\n\n");
-	printf("  -h       display this help and exit\n");
-	CcCore::Exit(EXIT_SUCCESS);
+	printf("\t-a\t\taddress of the nameserver in ip:port format (default: 127.0.0.1:8123)\n");
+	printf("\t-c\t\tname of the component to be retrieved from nameserver. It also represents\n"
+		   "\t  \t\tthe block in xml and in the TiC message (default: 'mi')\n");
+	printf("\t-h\t\tdisplay this help and exit\n");
 }
 
 int main(int argc, char** argv) {
-	
+
+	// Optional argument
+	int opt;
+	std::string optaddress("127.0.0.1:8123");
+	std::string	optcomponent("mi");
+
+	while((opt = getopt(argc, argv, "a:c:")) != -1) {
+		switch(opt) {
+			case 'a':
+				optaddress.assign(optarg);
+				break;
+			case 'c':
+				optcomponent.assign(optarg);
+				break;
+			case '?':
+				usage();
+				exit(opt == 'h' ? EXIT_SUCCESS : EXIT_FAILURE);
+		}
+	}
+
 	// Generic variables
-	const std::string	nmscomponent("mi_mobile");
 	const std::string	protocol("mi_mobile_offline");
+	const std::string	nmscomponent(optcomponent);
 	std::string			message;
 
 	// Tools for XML configuration
@@ -29,11 +50,11 @@ int main(int argc, char** argv) {
 	std::string		xblock;
 	std::string		xtaskset;
 	CCfgConfig		config;
-	CCfgTaskset*	taskset   = nullptr;
-	mitiming_t*		timings   = nullptr;
-	mievent_t*		mievents  = nullptr;
+	CCfgTaskset*	taskset    = nullptr;
+	mitiming_t*		timings    = nullptr;
+	mievent_t*		mievents   = nullptr;
 	devtiming_t*	devtimings = nullptr;
-	devevent_t*		devevents = nullptr;
+	devevent_t*		devevents  = nullptr;
 
 	// Tools for Copilot configuration
 	cnbi::mobile::CmCopilot copilot;
@@ -58,7 +79,7 @@ int main(int argc, char** argv) {
 	CcCore::OpenLogger(protocol);
 	CcCore::CatchSIGINT();
 	CcCore::CatchSIGTERM();
-	ClLoop::Configure();
+	ClLoop::Configure(optaddress);
 
 	/**** Connection to ClLoop ****/
 	message = "Connecting to loop...";
