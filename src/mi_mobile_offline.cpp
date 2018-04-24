@@ -257,20 +257,25 @@ int main(int argc, char** argv) {
 		idm.SetEvent(mievents->cfeedback + mievents->off);
 		id->SetMessage(ids);
 
-		// Boom
+		// Boom - On
 		idm.SetEvent(mievents->hit);
 		id->SetMessage(ids);
 		feedback->Hard(hitclass);
 		CcLogInfoS("Threshold reached for class "<< copilot.GetClass(hitclass));
-		CcTime::Sleep(timings->boom);
-		idm.SetEvent(mievents->hit + mievents->off);
-		id->SetMessage(ids);
-
+	
 		// Device
 		idm.SetEvent(devevents->device + copilot.GetClass(hitclass));
 		id->SetMessage(ids);
 		CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
-		CcTime::Sleep(devtimings->afterdiscrete);
+
+		CcTime::Sleep(timings->boom);
+		
+		idm.SetEvent(devevents->stop);
+		id->SetMessage(ids);
+	
+		// Boom - Off
+		idm.SetEvent(mievents->hit + mievents->off);
+		id->SetMessage(ids);
 
 		// Reset feedback
 		feedback->Reset();
