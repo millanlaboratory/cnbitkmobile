@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
 		}
 		
 		// Device
-		switch(copilot.GetClass(hitclass)) {
+		switch(taskset->GetTaskEx(hitclass)->id) {
 			case 0:
 				idm.SetEvent(devevents->right);
 				break;
@@ -351,7 +351,7 @@ int main(int argc, char** argv) {
 				break;
 			default:
 				CcLogWarningS("Unkown class id to be associated "
-							  "to device command: "<<copilot.GetClass(hitclass));
+							  "to device command: "<<taskset->GetTaskEx(hitclass)->id);
 				break;
 		}
 		id->SetMessage(ids);

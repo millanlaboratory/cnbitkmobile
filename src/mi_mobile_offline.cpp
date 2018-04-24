@@ -252,9 +252,9 @@ int main(int argc, char** argv) {
 		id->SetMessage(ids);
 		feedback->Hard(hitclass);
 		CcLogInfoS("Threshold reached for class "<< copilot.GetClass(hitclass));
-	
+		
 		// Device
-		switch(copilot.GetClass(hitclass)) {
+		switch(taskset->GetTaskEx(hitclass)->id) {
 			case 0:
 				idm.SetEvent(devevents->right);
 				break;
@@ -269,11 +269,10 @@ int main(int argc, char** argv) {
 				break;
 			default:
 				CcLogWarningS("Unkown class id to be associated "
-							  "to device command: "<<copilot.GetClass(hitclass));
+							  "to device command: "<< taskset->GetTaskEx(hitclass)->id);
 				break;
 		}
 
-		idm.SetEvent(devevents->device + copilot.GetClass(hitclass));
 		id->SetMessage(ids);
 		CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
 
