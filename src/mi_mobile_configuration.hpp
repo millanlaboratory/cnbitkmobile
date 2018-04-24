@@ -30,17 +30,15 @@ typedef struct {
 } mievent_t;
 
 typedef struct {
-	float wait;
-	float fixation;
-	float afterdiscrete;
-} devtiming_t;
-
-typedef struct {
 	unsigned int device;
 	unsigned int start;
 	unsigned int stop;
 	unsigned int pause;
 	unsigned int quit;
+	unsigned int forward;
+	unsigned int backward;
+	unsigned int left;
+	unsigned int right;
 } devevent_t;
 
 
@@ -87,21 +85,7 @@ bool mi_mobile_get_mi_events(CCfgConfig* config, mievent_t* mievents) {
 	}
 }
 
-bool mi_mobile_get_device_timings(CCfgConfig* config, devtiming_t* timings) {
 
-	try {
-		config->RootEx()->QuickEx("protocol/mi/")->SetBranch();
-		timings->wait			= config->BranchEx()->QuickFloatEx("device/wait");
-		timings->fixation		= config->BranchEx()->QuickFloatEx("device/fixation");
-		timings->afterdiscrete	= config->BranchEx()->QuickFloatEx("device/afterdiscrete");
-
-		return true;
-
-	} catch(XMLException e) {
-		CcLogException(e.Info());
-		return false;
-	}
-}
 bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 
 	try {
@@ -111,6 +95,10 @@ bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 		devevents->stop		= config->BranchEx()->QuickGDFIntEx("stop");
 		devevents->pause	= config->BranchEx()->QuickGDFIntEx("pause");
 		devevents->quit		= config->BranchEx()->QuickGDFIntEx("quit");
+		devevents->forward  = config->BranchEx()->QuickGDFIntEx("forward");
+		devevents->backward = config->BranchEx()->QuickGDFIntEx("backward");
+		devevents->left		= config->BranchEx()->QuickGDFIntEx("left");
+		devevents->right	= config->BranchEx()->QuickGDFIntEx("right");
 
 		return true;
 

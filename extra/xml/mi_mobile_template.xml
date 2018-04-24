@@ -32,11 +32,6 @@
 				<boom>4000.00</boom>
 				<timeout>6000.00</timeout>
 			</trial>
-			<device>
-				<wait>1000.0</wait>
-				<fixation>0.0</fixation>
-				<afterdiscrete>2000.0</afterdiscrete>
-			</device>
 		</mi>
 	</protocol>
 
@@ -117,7 +112,7 @@
 	</integrator>	
 
 	<!-- Device configuration -->
-	<device>
+	<!-- <device>
 		<ip>127.0.0.1</ip>
 		<ndf>
 			<port>9502</port>
@@ -133,7 +128,7 @@
 			<ros_resume>0x6308</ros_resume>
 			<ros_pause>0x6309</ros_pause>
 		</gdfevents>
-	</device>
+	</device> -->
 
 	<!-- Classifiers Block -->
 	<classifier>
@@ -277,6 +272,8 @@
 			<stop>0x6602</stop>
 			<forward>0x6603</forward>
 			<backward>0x6604</backward>
+			<left>0x6605</left>
+			<right>0x6606</right>
 			<pause>0x6609</pause>
 			<quit>0x660A</quit>
 

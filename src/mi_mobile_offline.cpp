@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
 	CCfgTaskset*	taskset    = nullptr;
 	mitiming_t*		timings    = nullptr;
 	mievent_t*		mievents   = nullptr;
-	devtiming_t*	devtimings = nullptr;
 	devevent_t*		devevents  = nullptr;
 
 	// Tools for Copilot configuration
@@ -139,15 +138,6 @@ int main(int argc, char** argv) {
 	message = "Device events XML configuration...";
 	devevents = new devevent_t;
 	if(mi_mobile_get_device_events(&config, devevents) == false) {
-		CcLogFatal(message + "failed.");
-		goto shutdown;
-	}
-	CcLogConfig(message + "done.");
-
-	/** Device timings configuration **/
-	message = "Device timings XML configuration...";
-	devtimings = new devtiming_t;
-	if(mi_mobile_get_device_timings(&config, devtimings) == false) {
 		CcLogFatal(message + "failed.");
 		goto shutdown;
 	}
@@ -264,6 +254,25 @@ int main(int argc, char** argv) {
 		CcLogInfoS("Threshold reached for class "<< copilot.GetClass(hitclass));
 	
 		// Device
+		switch(copilot.GetClass(hitclass)) {
+			case 0:
+				idm.SetEvent(devevents->right);
+				break;
+			case 1:
+				idm.SetEvent(devevents->left);
+				break;
+			case 2:
+				idm.SetEvent(devevents->forward);
+				break;
+			case 3:
+				idm.SetEvent(devevents->backward);
+				break;
+			default:
+				CcLogWarningS("Unkown class id to be associated "
+							  "to device command: "<<copilot.GetClass(hitclass));
+				break;
+		}
+
 		idm.SetEvent(devevents->device + copilot.GetClass(hitclass));
 		id->SetMessage(ids);
 		CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
