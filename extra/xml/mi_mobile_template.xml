@@ -29,7 +29,7 @@
 				<fixation>3000.00</fixation>
 				<cue>1000.00</cue>
 				<cfeedback>4000.00</cfeedback>
-				<boom>1000.00</boom>
+				<boom>4000.00</boom>
 				<timeout>6000.00</timeout>
 			</trial>
 			<device>
@@ -273,10 +273,12 @@
 			<targetmiss>0x0382</targetmiss>
 			<timeout>0x0383</timeout>
 			<device>0x6000</device>
-			<start>0x6301</start>
-			<stop>0x6302</stop>
-			<pause>0x6309</pause>
-			<quit>0x630A</quit>
+			<start>0x6601</start>
+			<stop>0x6602</stop>
+			<forward>0x6603</forward>
+			<backward>0x6604</backward>
+			<pause>0x6609</pause>
+			<quit>0x660A</quit>
 
 		</gdfevents>
 		<hwtriggers>
