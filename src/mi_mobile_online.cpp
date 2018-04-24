@@ -360,11 +360,39 @@ int main(int argc, char** argv) {
 			if(hitclass == TaskIdx) {
 				idm.SetEvent(mievents->hit);
 				id->SetMessage(ids);
+				CcLogInfoS("Target hit");
+
+				// Device
+				switch(taskset->GetTaskEx(hitclass)->id) {
+					case 0:
+						idm.SetEvent(devevents->right);
+						break;
+					case 1:
+						idm.SetEvent(devevents->left);
+						break;
+					case 2:
+						idm.SetEvent(devevents->forward);
+						break;
+					case 3:
+						idm.SetEvent(devevents->backward);
+						break;
+					default:
+						CcLogWarningS("Unkown class id to be associated "
+									  "to device command: "<<taskset->GetTaskEx(hitclass)->id);
+						break;
+				}
+
+				id->SetMessage(ids);
+				CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
+				
 				CcTime::Sleep(timings->boom);
+				
+				idm.SetEvent(devevents->stop);
+				id->SetMessage(ids);	
+				
 				idm.SetEvent(mievents->hit + mievents->off);
 				id->SetMessage(ids);
 				nhit++;
-				CcLogInfoS("Target hit");
 			} else {
 				idm.SetEvent(mievents->miss);
 				id->SetMessage(ids);
@@ -374,28 +402,6 @@ int main(int argc, char** argv) {
 				CcLogInfoS("Target missed");
 			}
 			
-			// Device
-			switch(taskset->GetTaskEx(hitclass)->id) {
-				case 0:
-					idm.SetEvent(devevents->right);
-					break;
-				case 1:
-					idm.SetEvent(devevents->left);
-					break;
-				case 2:
-					idm.SetEvent(devevents->forward);
-					break;
-				case 3:
-					idm.SetEvent(devevents->backward);
-					break;
-				default:
-					CcLogWarningS("Unkown class id to be associated "
-								  "to device command: "<<taskset->GetTaskEx(hitclass)->id);
-					break;
-			}
-
-			id->SetMessage(ids);
-			CcLogInfoS("TiD event for device ("<< copilot.GetClass(hitclass) <<")");
 		} else {
 			idm.SetEvent(mievents->miss);
 			id->SetMessage(ids);
