@@ -190,6 +190,9 @@ int main(int argc, char** argv) {
 	CcLogInfo("User asked to start");
 	feedback->ShowText("");
 	
+	// Start the device
+	idm.SetEvent(devevents->start);
+	id->SetMessage(ids);
 
 	CcTime::Sleep(timings->begin);
 
@@ -209,6 +212,7 @@ int main(int argc, char** argv) {
 				   ", Id=" << TaskIdx << ", GDF=" << ClassIdx);
 	
 		// Wait
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 		idm.SetEvent(mievents->wait);
 		id->SetMessage(ids);
 		CcTime::Sleep(timings->waitmin, timings->waitmax);
@@ -252,6 +256,7 @@ int main(int argc, char** argv) {
 		id->SetMessage(ids);
 		feedback->Hard(hitclass);
 		CcLogInfoS("Threshold reached for class "<< copilot.GetClass(hitclass));
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 		
 		// Device
 		switch(taskset->GetTaskEx(hitclass)->id) {
@@ -278,7 +283,7 @@ int main(int argc, char** argv) {
 
 		CcTime::Sleep(timings->boom);
 		
-		idm.SetEvent(devevents->stop);
+		idm.SetEvent(devevents->forward);
 		id->SetMessage(ids);
 	
 		// Boom - Off

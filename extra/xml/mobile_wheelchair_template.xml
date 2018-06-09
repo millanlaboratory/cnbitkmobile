@@ -2,17 +2,17 @@
 <cnbiconfig>
 	<!-- Subject Block -->
 	<subject>
-		<id>SUBJECT</id>
+		<id>test</id>
 		<age>AGE</age>
 	</subject>
 
 	<!-- Experimenter -->
 	<recording>
-		<experimenter>EXPERIMENTER</experimenter>
-		<experiment>Cybathlon</experiment>
-		<project>micontinuous</project>
-		<location>LOCATION</location>
-		<date>DATE</date>
+		<experimenter>ltonin</experimenter>
+		<experiment>wheelchair</experiment>
+		<project>wheelchair</project>
+		<location>CampusBiotech</location>
+		<date>2018.06.07</date>
 	</recording>
 
 	<!-- Protocol Block -->
@@ -24,13 +24,14 @@
 				<end>5000.00</end>
 			</scenes>
 			<trial>
-				<waitmin>1000.00</waitmin>
-				<waitmax>1000.00</waitmax>
+				<waitmin>5000.00</waitmin>
+				<waitmax>5000.00</waitmax>
 				<fixation>3000.00</fixation>
 				<cue>1000.00</cue>
-				<cfeedback>4000.00</cfeedback>
-				<boom>4000.00</boom>
-				<timeout>6000.00</timeout>
+				<cfeedback>5000.00</cfeedback>
+				<timeout>6000.00</timeout>			<!-- Used only for online modality -->
+				<boom>4000.00</boom>				<!-- Used only for offline-online modalities -->
+				<refractory>1000.00</refractory>	<!-- Used only for control modality instead of boom -->
 			</trial>
 		</mi>
 	</protocol>
@@ -39,15 +40,15 @@
 	<!-- Offline Block -->
 	<offline>
 		<mi description="Offline MI mobile" protocol="mi_mobile_offline">
-			<taskset ttype="mi_bhbf" ctype="mi" classifier="kmi0">
-				<threshold>
-					<mi_both_hands>0.8</mi_both_hands>
-					<mi_both_feet>0.8</mi_both_feet>
-				</threshold>
+			<taskset ttype="mi_bhbf">
 				<trials>
 					<mi_both_hands>15</mi_both_hands>
 					<mi_both_feet>15</mi_both_feet>
 				</trials>
+				<threshold>
+					<mi_both_hands>0.8</mi_both_hands>
+					<mi_both_feet>0.8</mi_both_feet>
+				</threshold>
 			</taskset>
 		</mi>
 	</offline>
@@ -99,36 +100,17 @@
 			<chi>1.0</chi>
 			<inc>0.7</inc>
 			<nrp>0.8</nrp>
-			
-			<!-- OLD -->			
-			<bias>0.5</bias>	<!-- To check if it works or not -->
-			<noreturn>0.7</noreturn>
-			<degree>8</degree>
 		</dynamic>
-		<vema>
-			<rho>0.9</rho>
-			<gamma>1.0</gamma>
-		</vema>
 	</integrator>	
 
-	<!-- Device configuration -->
-	<!-- <device>
-		<ip>127.0.0.1</ip>
+	<!-- Only for continuous control (forwarding the ic message to the robot) For legacy -->
+	<device>
 		<ndf>
-			<port>9502</port>
 			<ic>/ctrl2</ic>
 			<label>0x0580</label>
 		</ndf>
-		<gdfevents>
-			<ros_start>0x6301</ros_start>
-			<ros_stop>0x6302</ros_stop>
-			<ros_forward>0x6303</ros_forward>
-			<ros_right>0x6304</ros_right>
-			<ros_left>0x6305</ros_left>
-			<ros_resume>0x6308</ros_resume>
-			<ros_pause>0x6309</ros_pause>
-		</gdfevents>
-	</device> -->
+	</device>
+
 
 	<!-- Classifiers Block -->
 	<classifier>

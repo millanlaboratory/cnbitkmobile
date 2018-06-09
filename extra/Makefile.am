@@ -22,8 +22,10 @@ protocolmat_DATA = 	ndf/ndf_smrinc.m \
 protocolxmldir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/xml
 protocolxml_DATA = xml/smrinc_template.xml \
 				   xml/smr_mobile_template.xml \
-				   xml/mi_mobile_template.xml \
+				   xml/mobile_wheelchair_template.xml \
 				   ndf/CLASSIFIER.mat
 
-bin_SCRIPTS = cp_smrinc_launcher cp_smrmobile_launcher
+bin_SCRIPTS = cp_smrinc_launcher \
+			  cp_smrmobile_launcher \
+			  cp_mobile_wheelchair.launcher
 

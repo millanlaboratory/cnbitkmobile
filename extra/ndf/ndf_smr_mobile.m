@@ -32,10 +32,24 @@ try
     % Configuration iC for mobile
     ccfg_root(loop.cfg.config);
     ccfg_setbranch(loop.cfg.config);
-    loop.cfg.ndf.mobile.ic = ccfg_quickstring(loop.cfg.config, 'device/ndf/ic');
+
+	try 
+		loop.cfg.ndf.mobile.ic = ccfg_quickstring(loop.cfg.config, 'device/ndf/ic');
+	catch exception
+		disp('[ndf_smr_mobile] device/ndf/ic field does not exist. Using default value: /ctrl2')
+		loop.cfg.ndf.mobile.ic = '/ctrl2';
+	end
+
+
     ccfg_root(loop.cfg.config);
     ccfg_setbranch(loop.cfg.config);
-    loop.cfg.ndf.mobile.label = ccfg_quickgdf(loop.cfg.config, 'device/ndf/label');
+	
+	try
+		loop.cfg.ndf.mobile.label = ccfg_quickgdf(loop.cfg.config, 'device/ndf/label');
+	catch exception
+		disp('[ndf_smr_mobile] device/ndf/label field does not exist. Using default value: 0x0580 (1408)')
+		loop.cfg.ndf.mobile.label = 1408;
+	end
     
     loop.mobile.iC = tic_newsetonly();
     loop.mobile.mC = icmessage_new();

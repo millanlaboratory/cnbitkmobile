@@ -16,7 +16,8 @@ typedef struct {
 	float cfeedback;
 	float boom;
 	float timeout;
-	float device;
+	//float device;
+	float refractory;
 } mitiming_t;
 
 typedef struct {
@@ -56,6 +57,7 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 		timings->cfeedback	= config->BranchEx()->QuickFloatEx("trial/cfeedback");
 		timings->boom		= config->BranchEx()->QuickFloatEx("trial/boom");
 		timings->timeout	= config->BranchEx()->QuickFloatEx("trial/timeout");
+		timings->refractory	= config->BranchEx()->QuickFloatEx("trial/refractory");
 
 		return true;
 

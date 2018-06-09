@@ -62,10 +62,7 @@ int main(int argc, char** argv) {
 	// Tools for Copilot configuration
 	cnbi::mobile::CmCopilot copilot;
 	unsigned int TrialIdx;
-	unsigned int TaskIdx;
 	unsigned int ClassIdx;
-	unsigned int nhit = 0;
-	unsigned int nrej = 0;
 	std::ostringstream straccuracy;
 	std::ostringstream strrejection;
 	
@@ -261,6 +258,9 @@ int main(int argc, char** argv) {
 	CcLogInfo("User asked to start");
 	feedback->ShowText("");
 	
+	// Start the device
+	idm.SetEvent(devevents->start);
+	id->SetMessage(ids);
 
 	CcTime::Sleep(timings->begin);
 
@@ -272,13 +272,14 @@ int main(int argc, char** argv) {
 		CcLogInfoS("Trial " << TrialIdx);
 	
 		// Wait
-		idm.SetEvent(mievents->wait);
-		id->SetMessage(ids);
-		CcTime::Sleep(timings->waitmin);
-		idm.SetEvent(mievents->wait + mievents->off);
-		id->SetMessage(ids);
+		//idm.SetEvent(mievents->wait);
+		//id->SetMessage(ids);
+		//CcTime::Sleep(timings->waitmin);
+		//idm.SetEvent(mievents->wait + mievents->off);
+		//id->SetMessage(ids);
 
 		// Continuous Feedback
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 		idm.SetEvent(mievents->cfeedback);
 		id->SetMessage(ids, TCBlock::BlockIdxUnset, &fidx);
 
@@ -318,22 +319,10 @@ int main(int argc, char** argv) {
 		feedback->Hard(hitclass);
 		
 		// Boom
-		if(hitclass == TaskIdx) {
-			idm.SetEvent(mievents->hit);
-			id->SetMessage(ids);
-			CcTime::Sleep(timings->boom);
-			idm.SetEvent(mievents->hit + mievents->off);
-			id->SetMessage(ids);
-			nhit++;
-			CcLogInfoS("Target hit");
-		} else {
-			idm.SetEvent(mievents->miss);
-			id->SetMessage(ids);
-			CcTime::Sleep(timings->boom);
-			idm.SetEvent(mievents->miss + mievents->off);
-			id->SetMessage(ids);
-			CcLogInfoS("Target missed");
-		}
+		idm.SetEvent(mievents->hit);
+		id->SetMessage(ids);
+		CcLogInfoS("Target hit");
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 		
 		// Device
 		switch(taskset->GetTaskEx(hitclass)->id) {
@@ -357,6 +346,12 @@ int main(int argc, char** argv) {
 		id->SetMessage(ids);
 		CcLogInfoS("TiD event for device ("<< taskset->GetTaskEx(hitclass)->gdf <<")");
 
+		// Close boom
+		CcTime::Sleep(timings->refractory);				// Notice: refractory period instead boom
+
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+		idm.SetEvent(mievents->hit + mievents->off);
+		id->SetMessage(ids);
 
 		// Reset feedback
 		feedback->Reset();
