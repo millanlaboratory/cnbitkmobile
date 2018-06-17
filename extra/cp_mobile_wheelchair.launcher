@@ -171,7 +171,12 @@ if [ "$modality_name" != "offline" ]; then
 fi
 
 # Start ROS launcher
-gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && $ros_launcher'"
+cmd_recording="enable_recording:=false"
+if $flag_save
+then
+	cmd_recording="enable_recording:=true set_bag_name:=$gdf_filename.wheelchair.$modality_name.bag"
+fi
+gnome-terminal --tab -e "bash -c '. $ROS_WORKSPACE_CURRENT/devel/setup.bash && $ros_launcher $cmd_recording'"
 
 # Start protocol
 echo "[$NAME] - Starting the protocol: $bci_protocol"
