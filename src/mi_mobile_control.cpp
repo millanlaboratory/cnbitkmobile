@@ -375,6 +375,12 @@ int main(int argc, char** argv) {
 	}
 	printf("Elapsed: %f [ms]\n", CcTime::Toc(&tic));
 
+	// Stopping wheelchair
+	CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+	idm.SetEvent(devevents->stop);
+	id->SetMessage(ids);
+	CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+
 shutdown:
 
 	// Taskset shutdown

@@ -395,6 +395,7 @@ int main(int argc, char** argv) {
 				
 				idm.SetEvent(devevents->forward);
 				id->SetMessage(ids);	
+				CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 				
 				idm.SetEvent(mievents->hit + mievents->off);
 				id->SetMessage(ids);
@@ -441,6 +442,14 @@ int main(int argc, char** argv) {
 		
 	}
 	printf("Elapsed: %f [ms]\n", CcTime::Toc(&tic));
+
+	// Stopping wheelchair
+	CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+	idm.SetEvent(devevents->stop);
+	id->SetMessage(ids);
+	CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+	
+	// Computing online accuracy
 	straccuracy  << std::fixed << std::setprecision(1) << 100.0f*nhit/copilot.GetNumberTrial();
 	strrejection << std::fixed << std::setprecision(1) << 100.0f*nrej/copilot.GetNumberTrial();
 	message = "Accuracy: " + straccuracy.str() + "% (" + strrejection.str() +  "%)";
