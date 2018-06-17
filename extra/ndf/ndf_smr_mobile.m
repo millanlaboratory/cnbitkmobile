@@ -170,10 +170,10 @@ try
         exit;
     end
 
-	if(ndf.conf.eeg_channels == 16)
-		disp('[ndf_smr_mobile] Running with single gUSBamp');
-    else
-		disp('[ndf_smr_mobile] Running with two synced gUSBamps');        
+	if(user.bci.analysis.settings.eeg.chs ~= ndf.conf.eeg_channels)
+		disp('[ndf_mi] Error: NDF channels differ from classifier settings');
+        disp('[ndf_mi] Killing Matlab...');
+        exit;
 	end
 	
 	if(user.bci.analysis.settings.eeg.fs ~= ndf.conf.sf)
@@ -183,7 +183,7 @@ try
 	end
 
 
-    buffer.eeg = ndf_ringbuffer(ndf.conf.sf, 16, 1.00);
+	buffer.eeg = ndf_ringbuffer(ndf.conf.sf, ndf.conf.eeg_channels, 1.00);
 	buffer.tri = ndf_ringbuffer(ndf.conf.sf, ndf.conf.tri_channels, 1.00);
 	buffer.tim = ndf_ringbuffer(ndf.conf.sf/ndf.conf.samples, ndf.conf.tim_channels, 5.00);
 
@@ -215,7 +215,7 @@ try
 		end
 		
 		% Buffer NDF streams to the ring-buffers
-		buffer.eeg = ndf_add2buffer(buffer.eeg, ndf.frame.eeg(:,1:16));
+		buffer.eeg = ndf_add2buffer(buffer.eeg, ndf.frame.eeg);
 		buffer.tri = ndf_add2buffer(buffer.tri, ndf.frame.tri);
         
         % Classify current eeg frame
