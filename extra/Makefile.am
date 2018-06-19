@@ -1,7 +1,14 @@
 PACKAGE_NAME = @PACKAGE_NAME@
 
 protocolmatdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/ndf
-protocolmat_DATA = 	ndf/ndf_smrinc.m \
+protocolmat_DATA = 	ndf/integrator/ndf_integrator_ema.m \
+					ndf/integrator/ndf_integrator_dynamic.m \
+					ndf/integrator/ndf_integrator_forceprofile.m \
+					ndf/mobile/ndf_mobile.m \
+					ndf/mobile/ndf_mobile_include.m \
+					ndf/xml/ndf_xml_integrator_ema.m \
+					ndf/xml/ndf_xml_integrator_dynamic.m \						
+					ndf/ndf_smrinc.m \
 					ndf/ndf_smrinc_polyfit.m \
 					ndf/ndf_smr_mobile.m \
 					ndf/ndf_smr_mobile_polyfit.m \
