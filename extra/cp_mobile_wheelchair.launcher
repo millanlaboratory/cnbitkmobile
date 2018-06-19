@@ -167,7 +167,7 @@ fi
 # Start the GUI if not offline modality
 if [ "$modality_name" != "offline" ]; then
 	echo "[$NAME] - Launching the GUI"
-	smrinc_gui_parameters -x $xml &
+	gui_mobile_parameters -x $xml -t $taskset &
 fi
 
 # Start ROS launcher
@@ -200,6 +200,8 @@ fi
 # Unload configuration from nameserver
 echo "[$NAME] - Unload configuration from nameserver"
 cl_init -u -B $block
+cl_rpc eraseconfig integrator type 
+cl_rpc eraseconfig control type 
 sleep 1
 
 
