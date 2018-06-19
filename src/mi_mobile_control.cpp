@@ -253,6 +253,10 @@ int main(int argc, char** argv) {
 			CcLogWarning("User asked to quit");
 			goto shutdown;
 		}
+
+		// Update dynamically thresholds if changed
+		mi_mobile_update_threshold(taskset, feedback);
+		
 		CcTime::Sleep(100.0f);
 	}
 	CcLogInfo("User asked to start");
@@ -311,6 +315,13 @@ int main(int argc, char** argv) {
 			if( hitclass != -1) {
 				break;
 			}
+
+			// Update dynamically thresholds if changed
+			mi_mobile_update_threshold(taskset, feedback);
+
+			// Update dynamically refractory period
+			mi_mobile_update_timing("refractory", &timings->refractory);
+		
 		}
 		idm.SetEvent(mievents->cfeedback + mievents->off);
 		id->SetMessage(ids);

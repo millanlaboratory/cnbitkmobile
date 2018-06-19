@@ -3,6 +3,7 @@
 
 #include <cnbicore/CcBasic.hpp>
 #include <cnbiconfig/CCfgConfig.hpp>
+#include <cnbiprotocol/cp_utilities.hpp>
 #include "CmWheel.hpp"
 
 typedef struct {
@@ -180,6 +181,36 @@ bool mi_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskse
 		}
 	}
 	return res;
+}
+
+bool mi_mobile_update_threshold(CCfgTaskset* taskset, cnbi::mobile::CmWheel* wheel) {
+
+	bool res = false;
+	float curr_threshold;
+
+	for(auto it = taskset->Begin(); it != taskset->End(); it++) {
+		auto id = it->second->id; 
+		auto task = it->second->name;
+
+		if(wheel->GetThreshold(id, &curr_threshold) == false) {
+			CcLogFatalS("Cannot retrieve threshold value for class id " << id);
+		} 
+
+		if(cp_parameter_update("mi", task, "threshold", &curr_threshold)) {
+			wheel->SetThreshold(id, curr_threshold);
+			CcLogConfigS("Threshold changed to "<< curr_threshold<<" for mi|" << task);
+			res = true;
+		}
+	}
+
+	return res;
+}
+
+bool mi_mobile_update_timing(std::string label, float* time) {
+
+	if(cp_parameter_update("mi", "time", label, time)) {
+		CcLogConfigS(label << " period changed to "<< time << " [ms]");
+			}
 }
 
 #endif
