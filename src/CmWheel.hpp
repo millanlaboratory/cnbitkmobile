@@ -32,6 +32,7 @@ class CmWheel : public cnbi::draw::Engine {
 		virtual ~CmWheel(void);
 
 		void SetThreshold(unsigned int taskId, float threshold);
+		bool GetThreshold(unsigned int taskId, float* threshold);
 
 		void ShowFixation(void);
 		void ShowCue(unsigned int taskId);

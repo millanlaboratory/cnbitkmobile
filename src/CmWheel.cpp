@@ -140,6 +140,28 @@ void CmWheel::SetThreshold(unsigned int taskId, float threshold) {
 
 }
 
+bool CmWheel::GetThreshold(unsigned int taskId, float* threshold) {
+
+	bool res = false;
+	float th;
+	auto it = this->map_thresholds_.find(taskId);
+
+	if( it != this->map_thresholds_.end() ) {
+		
+		th = it->second;
+		if(taskId == cnbi::mobile::Task::Right)
+			th = 1.0f - th;
+		
+		*threshold = th;
+		res = true;
+	} else {
+		threshold = nullptr;
+	}
+
+	return res;
+}
+
+
 void CmWheel::ShowFixation(void) {
 	this->cue_->Hide();
 	this->text_->Hide();
