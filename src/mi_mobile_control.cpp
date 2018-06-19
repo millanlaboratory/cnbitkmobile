@@ -71,6 +71,10 @@ int main(int argc, char** argv) {
 	ClTobiId*			id	= nullptr;
 	IDSerializerRapid* 	ids	= nullptr;
 	std::string			idpipe("/bus");
+	IDMessage			iddm;	
+	ClTobiId*			idd	= nullptr;
+	IDSerializerRapid* 	idds	= nullptr;
+	std::string			iddpipe("/dev");
 	ICMessage			icm;
 	ClTobiIc*			ic = nullptr;
 	ICSerializerRapid*	ics = nullptr;
@@ -88,6 +92,7 @@ int main(int argc, char** argv) {
 	CcTimeValue tic;
 	CcTimeValue elapsed;
 	bool is_timeout;
+	unsigned int devevt;
 	
 	// Initialization ClLoop
 	CcCore::OpenLogger(protocol);
@@ -177,12 +182,28 @@ int main(int argc, char** argv) {
 	idm.SetDescription(protocol);
 	idm.SetFamilyType(IDMessage::FamilyBiosig);
 	idm.SetEvent(0);
+
+	// Device tid interface
+	idd  = new ClTobiId(ClTobiId::SetGet);
+	idds = new IDSerializerRapid(&iddm);
+
+	iddm.SetDescription(protocol);
+	iddm.SetFamilyType(IDMessage::FamilyBiosig);
+	iddm.SetEvent(0);
+
 	CcLogConfig(message + "done.");
 
 	printf("%s\n", taskset->ndf.id.c_str());
 	/**** Attach Id ****/
 	message = "Connecting TiD to " + taskset->ndf.id + "...";
 	if(id->Attach(taskset->ndf.id) == false) {
+		CcLogFatalS(message + "failed.");
+		goto shutdown;
+	}
+	CcLogInfo(message + "done.");
+	
+	message = "Connecting TiD to " + iddpipe + "...";
+	if(idd->Attach(iddpipe) == false) {
 		CcLogFatalS(message + "failed.");
 		goto shutdown;
 	}
@@ -291,7 +312,32 @@ int main(int argc, char** argv) {
 		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage);
 
 		while(true) {
-		
+	
+			// Check for device events
+			if(idd->GetMessage(idds) == true) {
+				devevt = iddm.GetEvent();
+				CcLogInfoS("Device event " << devevt << " received"); 
+				if(devevt == devevents->reached) {
+					CcLogInfoS("Target reached"); 
+				} else if(devevt == devevents->docked) {
+					CcLogInfoS("Device Docked"); 
+				} else if(devevt == devevents->stop) {
+					CcLogInfoS("Device Paused"); 
+				} else if(devevt == devevents->start) {
+					CcLogInfoS("Device Started"); 
+				}
+			}
+			
+			if(devevt == devevents->reached) {
+				feedback->ShowText("Reached");
+			} else if(devevt == devevents->docked) {
+				feedback->ShowText("Docked");
+			} else if(devevt == devevents->stop) {
+				feedback->ShowText("Paused");
+			} else if(devevt == devevents->start) {
+				feedback->ShowText("");
+			}
+
 			// Wait for Ic message
 			while(true) { 
 				switch(ic->WaitMessage(ics)) {

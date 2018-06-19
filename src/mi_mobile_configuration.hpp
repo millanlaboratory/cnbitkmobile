@@ -41,6 +41,8 @@ typedef struct {
 	unsigned int backward;
 	unsigned int left;
 	unsigned int right;
+	unsigned int reached;
+	unsigned int docked;
 } devevent_t;
 
 
@@ -102,6 +104,8 @@ bool mi_mobile_get_device_events(CCfgConfig* config, devevent_t* devevents) {
 		devevents->backward = config->BranchEx()->QuickGDFIntEx("backward");
 		devevents->left		= config->BranchEx()->QuickGDFIntEx("left");
 		devevents->right	= config->BranchEx()->QuickGDFIntEx("right");
+		devevents->reached	= config->BranchEx()->QuickGDFIntEx("reached");
+		devevents->docked	= config->BranchEx()->QuickGDFIntEx("docked");
 
 		return true;
 
