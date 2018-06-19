@@ -1,6 +1,7 @@
 PACKAGE_NAME = @PACKAGE_NAME@
 
-bin_SCRIPTS = smrinc_gui_parameters
+bin_SCRIPTS = smrinc_gui_parameters \
+			  gui_mobile_parameters
 
 #protocolguidir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/gui
 graphicsdir = $(prefix)/share/cnbipython/

@@ -1,0 +1,323 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  7 09:44:46 2017
+
+@author: Felix Bauer
+
+Open a GUI for changing the parameters of the integrators and saves them to 
+/tmp/cnbitk-$USER/$DATE.smrinc_parameters.txt
+"""
+
+import argparse
+from Tkinter import *
+import ttk
+from lxml import etree as et
+from datetime import datetime
+import os
+import sys
+import signal
+
+
+def on_closing(*args):
+    """Rename file where values have been saved to"""
+    time = datetime.now().timetuple()
+    filename_old = '{}{}{}{}{}.dynamic_parameters_old.txt'.format(
+        time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
+        str(time.tm_hour).zfill(2), str(time.tm_min).zfill(2))
+    oldfile = os.path.join(save_path, filename_old)
+
+    if os.path.exists(tempfile):
+        os.rename(tempfile, oldfile)
+    
+    root.destroy()
+    sys.exit()
+
+def save(param, *args):
+    """Save changed parameter to file, include timestamp"""
+    file = open(tempfile, 'a')
+    time = datetime.now().timetuple()
+    file.write('[{}{}{}{}{}{}] type|integrator|task|{}|{}|{}\n'.format(
+            time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
+            str(time.tm_hour).zfill(2), str(time.tm_min).zfill(2), str(time.tm_sec).zfill(2),
+            parameters[param][3], param, parameters[param][2].get()))
+    parameters[param][0]['foreground'] = 'black'
+    parameters[param][1].state(['disabled'])
+    file.close()    
+
+def save_threshold(param, *args):
+    """Save changed parameter to file, include timestamp"""
+    file = open(tempfile, 'a')
+    time = datetime.now().timetuple()
+    file.write('[{}{}{}{}{}{}] type|mi|{}|threshold|{}\n'.format(
+            time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
+            str(time.tm_hour).zfill(2), str(time.tm_min).zfill(2), str(time.tm_sec).zfill(2),
+            parameters[param][4], parameters[param][2].get()))
+    parameters[param][0]['foreground'] = 'black'
+    parameters[param][1].state(['disabled'])
+    file.close()    
+
+def save_time(param, *args):
+    """Save changed parameter to file, include timestamp"""
+    file = open(tempfile, 'a')
+    time = datetime.now().timetuple()
+    file.write('[{}{}{}{}{}{}] type|mi|time|{}|{}\n'.format(
+            time.tm_year, str(time.tm_mon).zfill(2), str(time.tm_mday).zfill(2),
+            str(time.tm_hour).zfill(2), str(time.tm_min).zfill(2), str(time.tm_sec).zfill(2),
+            parameters[param][3], parameters[param][2].get()))
+    parameters[param][0]['foreground'] = 'black'
+    parameters[param][1].state(['disabled'])
+    file.close()    
+    
+def val_changed(param):
+    """Behavior when parameter is changed"""
+    parameters[param][0]['foreground'] = '#B6B6B4'
+    parameters[param][1].state(['!disabled'])
+
+
+#Main window
+root = Tk()
+root.title('Enter parameters')
+
+#Initialize variables
+alpha=StringVar()
+threshold_1=StringVar()
+threshold_2=StringVar()
+chi=StringVar()
+phi=StringVar()
+inc=StringVar()
+nrp=StringVar()
+th0=StringVar()
+th1=StringVar()
+tasksets=[]
+thresholds=[]
+refractory=StringVar()
+
+#Path for saving data
+date = datetime.now().timetuple()
+user = os.environ['USER'] 
+image_path = ''
+save_path = '/tmp/cnbitk-{}/'.format(user)
+filename = '{}{}{}.dynamic_parameters.txt'.format(
+        date.tm_year, str(date.tm_mon).zfill(2), str(date.tm_mday).zfill(2))
+tempfile = os.path.join(save_path, filename)
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
+
+#Path where graphics are stored
+if 'CNBITK_PYTHON_DATA' in os.environ:
+    graphics_path = os.environ['CNBITK_PYTHON_DATA']
+#If variable not set search locally
+else:
+    graphics_path = ''
+
+#Load graphics
+try:
+    cnbi_logo_img = PhotoImage(file=os.path.join(graphics_path, 'cnbi_logo.gif'))
+except TclError:
+    pass
+
+try:
+    icon = Image("photo", file=os.path.join(graphics_path, "cnbi_icon.gif"))
+    root.tk.call('wm','iconphoto',root._w,icon)
+except TclError:
+    pass
+
+#Parse path to XML file from argument
+parser = argparse.ArgumentParser()
+parser.add_argument('-x', help='path to XML file')
+parser.add_argument('-t', help='taskset')
+args = parser.parse_args()
+xml_path = args.x
+taskset = args.t
+if args.x == None:
+    sys.exit('ERROR: No path to XML file given')
+
+if args.t == None:
+    sys.exit('ERROR: Taskset is required')
+
+#Parse default values from XML file
+try:
+    xml = et.parse(xml_path).getroot()
+except IOError:
+    sys.exit('ERROR: XML file {} not found'.format(path))
+
+try:
+    alpha.set(float(xml.findtext('.//integrator/ema/alpha')))
+    alpha.set(float(xml.findtext('.//integrator/ema/alpha')))
+    phi.set(float(xml.findtext('.//integrator/dynamic/phi')))
+    chi.set(float(xml.findtext('.//integrator/dynamic/chi')))
+    inc.set(float(xml.findtext('.//integrator/dynamic/inc')))
+    nrp.set(float(xml.findtext('.//integrator/dynamic/nrp')))
+    refractory.set(float(xml.findtext('.//protocol/mi/trial/refractory')));
+   
+    node = xml.find('tasksets/' + taskset);
+    for task in node.iter('class'):
+        tasksets.append(task.get('key'))
+   
+    for task in tasksets:
+        thresholds.append(float(xml.findtext('.//online/mi/taskset/threshold/'+task)));
+
+    th0.set(thresholds[0]);
+    th1.set(thresholds[1]);
+except TypeError:
+    sys.exit('ERROR: problem while determining default values from XML file')
+
+
+#Create actual GUI
+
+ttk.Style().configure("TButton", font=('Lato', '12'))
+ttk.Style().configure("TLabel", font=('Helvetica', '12'))
+style_title = ttk.Style()
+style_title.configure('Bold.TLabel', font='Helvetica 14 bold')
+
+crow=0
+mainframe = ttk.Frame(root, padding='3 3 12 12')
+mainframe.grid(column = 0,  row=crow, sticky =(N, W, E, S))
+mainframe.columnconfigure(0, weight=1)
+mainframe.rowconfigure(0, weight=1)
+
+#CNBI logo
+cnbi_logo = ttk.Label(mainframe, image=cnbi_logo_img)
+cnbi_logo.grid(column=0, row=0, columnspan=4)
+
+# THRESHOLDS - Title
+crow += 1
+th_separator = ttk.Separator (mainframe)
+th_separator.grid (row = crow, columnspan = 4, sticky = "ew")
+th_title = ttk.Label(mainframe, text='Thresholds', style="Bold.TLabel")
+th_title.grid(row=crow, columnspan=4, sticky=(NW))
+
+# THRESHOLDS - Entries
+crow += 1
+ttk.Label(mainframe, text=tasksets[0] + ':').grid(column=0, row=crow, sticky=W)
+th0_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save_threshold('th0'))
+th0_entry = Spinbox(mainframe, width=5, from_=0.5, to=1.0, increment=0.01, textvariable=th0)
+th0_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+th0_entry.grid(column=1, row=crow)
+th0_button.grid(column=2, row=crow, sticky=E)
+th0_saved.grid(column=3, row=crow)
+
+crow += 1
+ttk.Label(mainframe, text=tasksets[1] + ':').grid(column=0, row=crow, sticky=W)
+th1_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save_threshold('th1'))
+th1_entry = Spinbox(mainframe, width=5, from_=0.5, to=1.0, increment=0.01, textvariable=th1)
+th1_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+th1_entry.grid(column=1, row=crow)
+th1_button.grid(column=2, row=crow, sticky=E)
+th1_saved.grid(column=3, row=crow)
+
+# REFRACTORY - Title
+crow += 1
+refractory_separator = ttk.Separator (mainframe)
+refractory_separator.grid (row = crow, columnspan = 4, sticky = "ew")
+ttk.Label(mainframe, text='Refractory period', style="Bold.TLabel").grid(row=crow, columnspan=4, sticky=(NW))
+
+# REFRACTORY - Entry
+crow += 1
+ttk.Label(mainframe, text='Period [ms]:').grid(column=0, row=crow, sticky=W)
+refractory_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save_time('refractory'))
+refractory_entry = Spinbox(mainframe, width=5, from_=0.0, to=10000.0, increment=100.0, textvariable=refractory)
+refractory_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+refractory_entry.grid(column=1, row=crow)
+refractory_button.grid(column=2, row=crow, sticky=E)
+refractory_saved.grid(column=3, row=crow)
+
+#EMA - Title
+crow += 1
+ema_separator = ttk.Separator (mainframe)
+ema_separator.grid (row = crow, columnspan = 4, sticky = "ew")
+ttk.Label(mainframe, text='Exponential Smoothing', style="Bold.TLabel").grid(row=crow, columnspan=4, sticky=(NW))
+
+#EMA - Entry
+crow += 1
+ttk.Label(mainframe, text='Alpha:').grid(column=0, row=crow, sticky=W)
+alpha_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('alpha'))
+alpha_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.01, textvariable=alpha)
+alpha_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+alpha_entry.grid(column=1, row=crow)
+alpha_button.grid(column=2, row=crow, sticky=E)
+alpha_saved.grid(column=3, row=crow)
+
+#Dyn. model - Title
+crow += 1
+dyn_separator = ttk.Separator (mainframe)
+dyn_separator.grid (row = crow, columnspan = 4, sticky = "ew")
+ttk.Label(mainframe, text='Dynamical', style="Bold.TLabel").grid(row=crow, columnspan=4, sticky=(NW))
+
+#Parameter phi
+crow += 1
+ttk.Label(mainframe, text='Phi:').grid(column=0, row=crow, sticky=W)
+phi_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('phi'))
+phi_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.01, textvariable=phi)
+phi_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+phi_entry.grid(column=1, row=crow)
+phi_button.grid(column=2, row=crow, sticky=E)
+phi_saved.grid(column=3, row=crow)
+
+#Parameter chi
+crow += 1
+ttk.Label(mainframe, text='Chi:').grid(column=0, row=crow, sticky=W)
+chi_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('chi'))
+chi_entry = Spinbox(mainframe, width=5, from_=0.0, to=5.0, increment=0.1, textvariable=chi)
+chi_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+chi_entry.grid(column=1, row=crow)
+chi_button.grid(column=2, row=crow, sticky=E)
+chi_saved.grid(column=3, row=crow)
+
+#Parameter inc
+crow += 1
+ttk.Label(mainframe, text='Inc:').grid(column=0, row=crow, sticky=W)
+inc_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('inc'))
+inc_entry = Spinbox(mainframe, width=5, from_=0.0, to=5.0, increment=0.01, textvariable=inc)
+inc_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+inc_entry.grid(column=1, row=crow)
+inc_button.grid(column=2, row=crow, sticky=E)
+inc_saved.grid(column=3, row=crow)
+
+#Parameter nrp
+crow += 1
+ttk.Label(mainframe, text='Nrp:').grid(column=0, row=crow, sticky=W)
+nrp_button = ttk.Button(mainframe, text='Save', command 
+           = lambda : save('nrp'))
+nrp_entry = Spinbox(mainframe, width=5, from_=0.0, to=1.0, increment=0.01, textvariable=nrp)
+nrp_saved = ttk.Label(mainframe, text='saved', foreground='#B6B6B4')
+nrp_entry.grid(column=1, row=crow)
+nrp_button.grid(column=2, row=crow, sticky=E)
+nrp_saved.grid(column=3, row=crow)
+
+#Dict for accessing objects pertaining each parameter
+parameters = {'alpha' : [alpha_saved, alpha_button, alpha, 'ema'], 
+          'phi' : [phi_saved, phi_button, phi, 'dynamic'],
+          'chi' : [chi_saved, chi_button, chi, 'dynamic'],
+	  'inc' : [inc_saved, inc_button, inc, 'dynamic'],
+	  'nrp' : [nrp_saved, nrp_button, nrp, 'dynamic'],
+          'th0' : [th0_saved, th0_button, th0, 'threshold', tasksets[0]],
+          'th1' : [th1_saved, th1_button, th1, 'threshold', tasksets[1]],
+	  'refractory' : [refractory_saved, refractory_button, refractory, 'refractory']}
+
+#Behavior when parameter is changed
+alpha.trace('w', lambda n1,n2,op,parameter='alpha' : val_changed(parameter))
+phi.trace('w', lambda n1,n2,op,parameter='phi' : val_changed(parameter))
+chi.trace('w', lambda n1,n2,op,parameter='chi' : val_changed(parameter))
+inc.trace('w', lambda n1,n2,op,parameter='inc' : val_changed(parameter))
+nrp.trace('w', lambda n1,n2,op,parameter='nrp' : val_changed(parameter))
+th0.trace('w', lambda n1,n2,op,parameter='th0' : val_changed(parameter))
+th1.trace('w', lambda n1,n2,op,parameter='th1' : val_changed(parameter))
+refractory.trace('w', lambda n1,n2,op,parameter='refractory' : val_changed(parameter))
+
+phi_saved['foreground']='#B6B6B4'
+
+for child in mainframe.winfo_children():
+    child.grid_configure(padx=5, pady=5)
+
+signal.signal(signal.SIGTERM, on_closing)
+root.protocol("WM_DELETE_WINDOW", on_closing)
+root.mainloop()
