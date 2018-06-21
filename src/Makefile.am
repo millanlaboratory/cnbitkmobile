@@ -4,7 +4,7 @@ AM_CXXFLAGS = -std=c++11
 lib_LTLIBRARIES = libcnbimobile.la
 #
 libcnbimobile_includedir = $(includedir)/cnbimobile
-libcnbimobile_include_HEADERS = CmWheel.hpp \	
+libcnbimobile_include_HEADERS = CmWheel.hpp \
 								CmEngine.hpp \
 								CmFeedback.hpp \
 								CmCopilot.hpp
