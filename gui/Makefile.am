@@ -9,5 +9,9 @@ graphicsdir = $(prefix)/share/cnbipython/
 graphics_DATA = cnbi_logo.gif \
 			   cnbi_icon.gif
 
+imagesdir=$(prefix)/share/$(PACKAGE_NAME)/images/
+images_DATA  = cnbi_logo.gif \
+			   cnbi_icon.gif
+
 
 

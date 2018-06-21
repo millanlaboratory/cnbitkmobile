@@ -34,5 +34,6 @@ protocolxml_DATA = xml/smrinc_template.xml \
 
 bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_smrmobile_launcher \
-			  cp_mobile_wheelchair.launcher
+			  cp_mobile_wheelchair.launcher \
+			  cp_mobile_wheelchair.gui
 
