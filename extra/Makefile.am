@@ -43,14 +43,18 @@ icons_DATA = icons/cnbiloop-gtec-16.svg \
 			 icons/cnbiloop-gtec-32.svg \
 			 icons/cnbimobile-joystick.svg \
 			 icons/cnbimobile-wheelchair.svg \
-			 icons/cnbimobile-wheelchair-bci.svg
+			 icons/cnbimobile-wheelchair-bci.svg \
+			 icons/eegview-gtec-16.svg \
+			 icons/eegview-gtec-32.svg
 
 desktopdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/desktop
 desktop_DATA = desktop/CNBILoop-gUSBamp-16EEG.desktop \
 			   desktop/CNBILoop-gUSBamp-32EEG.desktop \
 			   desktop/CNBIMobileProtocols.desktop \
 			   desktop/CNBIWheelchairJoystick.desktop \
-			   desktop/CNBIWheelchairNavigationDemo.desktop
+			   desktop/CNBIWheelchairNavigationDemo.desktop \
+			   desktop/eegview-gUSBamp-16EEG.desktop \
+			   desktop/eegview-gUSBamp-32EEG.desktop
 
 install-exec-local:
 	cp desktop/*.desktop ${HOME}/Desktop/ 
@@ -58,4 +62,5 @@ install-exec-local:
 uninstall-local:
 	cd ${HOME}/Desktop && rm CNBILoop-gUSBamp-16EEG.desktop && rm \
 	CNBILoop-gUSBamp-32EEG.desktop && rm CNBIMobileProtocols.desktop && rm \
-	CNBIWheelchairJoystick.desktop && rm CNBIWheelchairNavigationDemo.desktop
+	CNBIWheelchairJoystick.desktop && rm CNBIWheelchairNavigationDemo.desktop \
+	&& rm eegview-gUSBamp-16EEG.desktop && rm eegview-gUSBamp-32EEG.desktop
