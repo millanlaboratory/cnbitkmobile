@@ -54,7 +54,8 @@ desktop_DATA = desktop/CNBILoop-gUSBamp-16EEG.desktop \
 			   desktop/CNBIWheelchairJoystick.desktop \
 			   desktop/CNBIWheelchairNavigationDemo.desktop \
 			   desktop/eegview-gUSBamp-16EEG.desktop \
-			   desktop/eegview-gUSBamp-32EEG.desktop
+			   desktop/eegview-gUSBamp-32EEG.desktop \
+			   desktop/CNBILoop-Close.desktop
 
 install-exec-local:
 	cp desktop/*.desktop ${HOME}/Desktop/ 
@@ -63,4 +64,5 @@ uninstall-local:
 	cd ${HOME}/Desktop && rm CNBILoop-gUSBamp-16EEG.desktop && rm \
 	CNBILoop-gUSBamp-32EEG.desktop && rm CNBIMobileProtocols.desktop && rm \
 	CNBIWheelchairJoystick.desktop && rm CNBIWheelchairNavigationDemo.desktop \
-	&& rm eegview-gUSBamp-16EEG.desktop && rm eegview-gUSBamp-32EEG.desktop
+	&& rm eegview-gUSBamp-16EEG.desktop && rm eegview-gUSBamp-32EEG.desktop \
+	&& rm CNBILoop-Close.desktop
