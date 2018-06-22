@@ -35,5 +35,27 @@ protocolxml_DATA = xml/smrinc_template.xml \
 bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_smrmobile_launcher \
 			  cp_mobile_wheelchair.launcher \
-			  cp_mobile_wheelchair.gui
+			  cp_mobile_wheelchair.gui \
+			  cl_runloop_gUSBamp_32 
 
+iconsdir = ${HOME}/.local/share/icons
+icons_DATA = icons/cnbiloop-gtec-16.svg \
+			 icons/cnbiloop-gtec-32.svg \
+			 icons/cnbimobile-joystick.svg \
+			 icons/cnbimobile-wheelchair.svg \
+			 icons/cnbimobile-wheelchair-bci.svg
+
+desktopdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/desktop
+desktop_DATA = desktop/CNBILoop-gUSBamp-16EEG.desktop \
+			   desktop/CNBILoop-gUSBamp-32EEG.desktop \
+			   desktop/CNBIMobileProtocols.desktop \
+			   desktop/CNBIWheelchairJoystick.desktop \
+			   desktop/CNBIWheelchairNavigationDemo.desktop
+
+install-exec-local:
+	cp desktop/*.desktop ${HOME}/Desktop/ 
+
+uninstall-local:
+	cd ${HOME}/Desktop && rm CNBILoop-gUSBamp-16EEG.desktop && rm \
+	CNBILoop-gUSBamp-32EEG.desktop && rm CNBIMobileProtocols.desktop && rm \
+	CNBIWheelchairJoystick.desktop && rm CNBIWheelchairNavigationDemo.desktop
