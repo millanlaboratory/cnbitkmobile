@@ -14,6 +14,7 @@
 #include <cnbidraw/Arc.hpp>
 #include <cnbidraw/String.hpp>
 #include <cnbidraw/Font.hpp>
+#include <cnbidraw/Image.hpp>
 
 #define KEY_SPACE	32
 #define KEY_ESC		27
@@ -33,9 +34,11 @@ class CmWheel : public cnbi::draw::Engine {
 
 		void SetThreshold(unsigned int taskId, float threshold);
 		bool GetThreshold(unsigned int taskId, float* threshold);
+		void SetImage(unsigned int taskId, std::string path);
 
 		void ShowFixation(void);
 		void ShowCue(unsigned int taskId);
+		void ShowImage(unsigned int taskId);
 		void ShowText(std::string text, float x=0.0f, float y=0.0f);
 		
 		int Update(float angle);
@@ -61,6 +64,7 @@ class CmWheel : public cnbi::draw::Engine {
 		cnbi::draw::Rectangle*	mrkf_;
 		cnbi::draw::Font*		font_;
 		cnbi::draw::String*		text_;
+		cnbi::draw::Image*		img_;
 
 		float rng_size_;
 		float rng_thick_;
@@ -76,6 +80,7 @@ class CmWheel : public cnbi::draw::Engine {
 
 	private:
 		std::map<unsigned int, float>	map_thresholds_;
+		std::map<unsigned int, std::string>	map_images_;
 		cnbi::draw::Events*				events_;
 		bool	is_space_pressed_;
 		bool	is_esc_pressed_;

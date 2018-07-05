@@ -1,5 +1,7 @@
 #ifndef CNBI_MI_MOBILE_CONFIGURATION_HPP
 #define CNBI_MI_MOBILE_CONFIGURATION_HPP
+#include <regex>
+#include <stdlib.h>
 
 #include <cnbicore/CcBasic.hpp>
 #include <cnbiconfig/CCfgConfig.hpp>
@@ -45,6 +47,17 @@ typedef struct {
 	unsigned int docked;
 } devevent_t;
 
+
+void ExpandPath(std::string& text) {
+	static std::regex env("/?\\$\\{?([^}/]+)\\}?/?");
+	std::smatch match;
+	while(std::regex_search(text, match, env)) {
+		const char* s = getenv(match[1].str().c_str());
+		const std::string var(s==NULL ? "" : s);
+		text.replace(match[0].first, match[0].second, var+"/");
+	}
+	
+}
 
 bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 
@@ -175,6 +188,7 @@ bool mi_mobile_configure_copilot(cnbi::mobile::CmCopilot* copilot, CCfgTaskset* 
 bool mi_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskset) {
 
 	bool res = true;
+	std::string path;
 	for(auto it=taskset->Begin(); it!=taskset->End(); ++it) {
 
 		if(it->second->HasConfig("threshold") == true) {
@@ -183,6 +197,14 @@ bool mi_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskse
 			CcLogFatalS("Task " << it->second->gdf <<" does not have 'threshold' field"); 
 			res = false;
 		}
+
+		if(it->second->HasConfig("image") == true) {
+			path = it->second->config["image"].String();
+			ExpandPath(path);
+			wheel->SetImage(it->second->id, path);
+			CcLogConfigS("Image for task "<< it->second->gdf<<": " << path);
+		}
+
 	}
 	return res;
 }
@@ -216,5 +238,6 @@ bool mi_mobile_update_timing(std::string label, float* time) {
 		CcLogConfigS(label << " period changed to "<< time << " [ms]");
 			}
 }
+
 
 #endif

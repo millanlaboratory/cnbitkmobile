@@ -313,6 +313,7 @@ int main(int argc, char** argv) {
 		idm.SetEvent(ClassIdx);
 		id->SetMessage(ids);
 		feedback->ShowCue(TaskIdx);
+		feedback->ShowImage(TaskIdx);
 		CcTime::Sleep(timings->cue);
 		idm.SetEvent(ClassIdx + mievents->off);
 		id->SetMessage(ids);

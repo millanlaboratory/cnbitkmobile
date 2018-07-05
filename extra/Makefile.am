@@ -32,6 +32,10 @@ protocolxml_DATA = xml/smrinc_template.xml \
 				   xml/mobile_wheelchair_template.xml \
 				   ndf/CLASSIFIER.mat
 
+imagesdir = ${HOME}/.cnbitk/${PACKAGE_NAME}/images
+images_DATA = images/both_hands.png \
+				 images/both_feet.png
+
 bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_smrmobile_launcher \
 			  cp_mobile_wheelchair.launcher \
