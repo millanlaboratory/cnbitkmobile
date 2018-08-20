@@ -24,6 +24,12 @@ typedef struct {
 } mitiming_t;
 
 typedef struct {
+	float begin;
+	float end;
+	float fixate;
+} rsttiming_t;
+
+typedef struct {
 	unsigned int wait;
 	unsigned int fixation;
 	unsigned int cfeedback;
@@ -74,6 +80,22 @@ bool mi_mobile_get_timings(CCfgConfig* config, mitiming_t* timings) {
 		timings->boom		= config->BranchEx()->QuickFloatEx("trial/boom");
 		timings->timeout	= config->BranchEx()->QuickFloatEx("trial/timeout");
 		timings->refractory	= config->BranchEx()->QuickFloatEx("trial/refractory");
+
+		return true;
+
+	} catch(XMLException e) {
+		CcLogException(e.Info());
+		return false;
+	}
+}
+
+bool resting_mobile_get_timings(CCfgConfig* config, rsttiming_t* timings) {
+
+	try {
+		config->RootEx()->QuickEx("protocol/resting/")->SetBranch();
+		timings->begin	= config->BranchEx()->QuickFloatEx("begin");
+		timings->end	= config->BranchEx()->QuickFloatEx("end");
+		timings->fixate = config->BranchEx()->QuickFloatEx("fixate");
 
 		return true;
 
@@ -208,6 +230,24 @@ bool mi_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskse
 	}
 	return res;
 }
+
+bool resting_mobile_configure_wheel(cnbi::mobile::CmWheel* wheel, CCfgTaskset* taskset) {
+
+	bool res = true;
+	std::string path;
+	for(auto it=taskset->Begin(); it!=taskset->End(); ++it) {
+
+		if(it->second->HasConfig("image") == true) {
+			path = it->second->config["image"].String();
+			ExpandPath(path);
+			wheel->SetImage(it->second->id, path);
+			CcLogConfigS("Image for task "<< it->second->gdf<<": " << path);
+		}
+
+	}
+	return res;
+}
+
 
 bool mi_mobile_update_threshold(CCfgTaskset* taskset, cnbi::mobile::CmWheel* wheel) {
 

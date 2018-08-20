@@ -13,6 +13,7 @@ core
 mi_mobile_offline
 mi_mobile_online
 mi_mobile_control
+resting_mobile_offline
 smrinc_robotino_run_generator
 *.swp
 *.swo

@@ -34,11 +34,14 @@ protocolxml_DATA = xml/smrinc_template.xml \
 
 imagesdir = ${HOME}/.cnbitk/${PACKAGE_NAME}/images
 images_DATA = images/both_hands.png \
-				 images/both_feet.png
+				 images/both_feet.png \
+				 images/eye_open.png
 
 bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_smrmobile_launcher \
 			  cp_mobile_wheelchair.launcher \
+			  cp_mobile_resting.launcher \
+			  cp_mobile_resting.gui \
 			  cp_mobile_wheelchair.gui \
 			  cl_runloop_antneuro_32 
 
@@ -48,6 +51,7 @@ icons_DATA = icons/cnbiloop-antneuro-32.svg \
 			 icons/cnbimobile-joystick.svg \
 			 icons/cnbimobile-wheelchair.svg \
 			 icons/cnbimobile-wheelchair-bci.svg \
+			 icons/cnbimobile-resting.svg \
 			 icons/eegview-32.svg \
 			 icons/eegview-64.svg
 
@@ -55,6 +59,7 @@ desktopdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/desktop
 desktop_DATA = desktop/CNBILoop-AntNeuro-32EEG.desktop \
 			   desktop/CNBILoop-AntNeuro-64EEG.desktop \
 			   desktop/CNBIMobileProtocols.desktop \
+			   desktop/CNBIMobileResting.desktop \
 			   desktop/CNBIWheelchairJoystick.desktop \
 			   desktop/CNBIWheelchairNavigationDemo.desktop \
 			   desktop/eegview-AntNeuro-32EEG.desktop \
@@ -70,4 +75,5 @@ uninstall-local:
 	rm -f CNBILoop-AntNeuro-64EEG.desktop && rm -f CNBIMobileProtocols.desktop && \
 	rm -f CNBIWheelchairJoystick.desktop && rm -f CNBIWheelchairNavigationDemo.desktop && \
 	rm -f eegview-AntNeuro-32EEG.desktop && rm -f eegview-AntNeuro-64EEG.desktop && \
-	rm -f CNBILoop-Close.desktop && rm -f CNBIWheelchairVisualization.desktop
+	rm -f CNBILoop-Close.desktop && rm -f CNBIWheelchairVisualization.desktop && \
+	rm -f CNBIMobileResting.desktop

@@ -34,6 +34,11 @@
 				<refractory>1000.00</refractory>	<!-- Used only for control modality instead of boom -->
 			</trial>
 		</mi>
+		<resting>
+			<begin>2000.0</begin>
+			<end>2000.0</end>
+			<fixate>0.1</fixate>  <!-- In minutes -->
+		</resting>
 	</protocol>
 
 	
@@ -55,6 +60,14 @@
 				</image>
 			</taskset>
 		</mi>
+
+		<resting description="Resting state" protocol="">
+			<taskset ttype="resting_fixate">
+				<image>
+					<fixate>$HOME/.cnbitk/cnbimobile/images/eye_open.png</fixate>
+				</image>
+			</taskset>
+		</resting>
 	</offline>
 
 	<!-- Online Block -->
@@ -174,6 +187,10 @@
 			<class id="0" key="artifact_on"/>
 			<class id="1" key="artifact_off"/>
 		</artifact_onoff>
+		<resting_fixate description="Resting state fixating">
+			<class id="0" key="fixate" />
+		</resting_fixate>
+
 	</tasksets>
 	
 	<!-- Standard Task List -->
@@ -223,6 +240,11 @@
 			<gdfevent>0x010c</gdfevent>
 			<hwtrigger>1</hwtrigger>
 		</artifact_off>
+		<fixate>
+			<description>Fixate</description>
+			<gdfevent>0x0312</gdfevent>
+			<hwtrigger>1</hwtrigger>
+		</fixate>
 	</tasks>
 	
 	<!-- Standard Events List -->
