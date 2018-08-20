@@ -40,25 +40,25 @@ bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_smrmobile_launcher \
 			  cp_mobile_wheelchair.launcher \
 			  cp_mobile_wheelchair.gui \
-			  cl_runloop_gUSBamp_32 
+			  cl_runloop_antneuro_32 
 
 iconsdir = ${HOME}/.local/share/icons
-icons_DATA = icons/cnbiloop-gtec-16.svg \
-			 icons/cnbiloop-gtec-32.svg \
+icons_DATA = icons/cnbiloop-antneuro-32.svg \
+			 icons/cnbiloop-antneuro-64.svg \
 			 icons/cnbimobile-joystick.svg \
 			 icons/cnbimobile-wheelchair.svg \
 			 icons/cnbimobile-wheelchair-bci.svg \
-			 icons/eegview-gtec-16.svg \
-			 icons/eegview-gtec-32.svg
+			 icons/eegview-32.svg \
+			 icons/eegview-64.svg
 
 desktopdir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/desktop
-desktop_DATA = desktop/CNBILoop-gUSBamp-16EEG.desktop \
-			   desktop/CNBILoop-gUSBamp-32EEG.desktop \
+desktop_DATA = desktop/CNBILoop-AntNeuro-32EEG.desktop \
+			   desktop/CNBILoop-AntNeuro-64EEG.desktop \
 			   desktop/CNBIMobileProtocols.desktop \
 			   desktop/CNBIWheelchairJoystick.desktop \
 			   desktop/CNBIWheelchairNavigationDemo.desktop \
-			   desktop/eegview-gUSBamp-16EEG.desktop \
-			   desktop/eegview-gUSBamp-32EEG.desktop \
+			   desktop/eegview-AntNeuro-32EEG.desktop \
+			   desktop/eegview-AntNeuro-64EEG.desktop \
 			   desktop/CNBILoop-Close.desktop \
 			   desktop/CNBIWheelchairVisualization.desktop
 
@@ -66,8 +66,8 @@ install-exec-local:
 	cp desktop/*.desktop ${HOME}/Desktop/ 
 
 uninstall-local:
-	cd ${HOME}/Desktop && rm -f CNBILoop-gUSBamp-16EEG.desktop && \
-	rm -f CNBILoop-gUSBamp-32EEG.desktop && rm -f CNBIMobileProtocols.desktop && \
+	cd ${HOME}/Desktop && rm -f CNBILoop-AntNeuro-32EEG.desktop && \
+	rm -f CNBILoop-AntNeuro-64EEG.desktop && rm -f CNBIMobileProtocols.desktop && \
 	rm -f CNBIWheelchairJoystick.desktop && rm -f CNBIWheelchairNavigationDemo.desktop && \
-	rm -f eegview-gUSBamp-16EEG.desktop && rm -f eegview-gUSBamp-32EEG.desktop && \
+	rm -f eegview-AntNeuro-32EEG.desktop && rm -f eegview-AntNeuro-64EEG.desktop && \
 	rm -f CNBILoop-Close.desktop && rm -f CNBIWheelchairVisualization.desktop
