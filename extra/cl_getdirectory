@@ -19,10 +19,11 @@ rootdir = os.getenv('HOME', '~') + '/Desktop/mi_wheelchair_bochum/'
 
 # Check subfolder in the data directory with SUBJECTID_mi_wheelchair format
 subjects = []
-for root, dirs, filename in os.walk(rootdir):
+for root, dirs, filename in os.walk(rootdir, followlinks=True):
     for name in dirs:
         m = re.search('(.+?)_mi_wheelchair', name)
-        subjects.append(m.group(1))
+        if m:
+            subjects.append(m.group(1))
     break
 
 # Create Tk dialog
