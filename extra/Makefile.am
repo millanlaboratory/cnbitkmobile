@@ -43,7 +43,9 @@ bin_SCRIPTS = cp_smrinc_launcher \
 			  cp_mobile_resting.launcher \
 			  cp_mobile_resting.gui \
 			  cp_mobile_wheelchair.gui \
-			  cl_runloop_antneuro_32 
+			  cl_runloop_antneuro_32 \
+			  cl_runloop_antneuro_64 \
+			  cl_getdirectory
 
 iconsdir = ${HOME}/.local/share/icons
 icons_DATA = icons/cnbiloop-antneuro-32.svg \

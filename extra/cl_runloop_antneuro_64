@@ -26,10 +26,10 @@ else
 	echo "[cl_runloop] - Data will be saved in $WORKINGDIR"
 fi
 
-cl_rpcnotify "CnbiTk cl_runloop" "Starting AntNeuro 32-channel"
+cl_rpcnotify "CnbiTk cl_runloop" "Starting AntNeuro 64-channel"
 cl_copyxsl
 
 gnome-terminal \
 ---tab --working-directory=$WORKINGDIR -e "bash -c 'cl_keepalive cl_nameserver'" --title "CnbiTk Nameserver" \
 ---tab --working-directory=$WORKINGDIR -e "bash -c 'sleep 1; cl_keepalive cl_processing'" --title "CnbiTk Processing" \
----tab --working-directory=$WORKINGDIR -e "bash -c 'sleep 2; cl_keepalive cl_acquisition -d \"eego|EEG_MASK|0x001FFF609779CF20\"'" --title "CnbiTk Acquisition"
+---tab --working-directory=$WORKINGDIR -e "bash -c 'sleep 2; cl_keepalive cl_acquisition -d eego'" --title "CnbiTk Acquisition"
