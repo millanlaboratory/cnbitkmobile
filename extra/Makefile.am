@@ -29,6 +29,10 @@ protocolmat_DATA = 	ndf/integrator/ndf_integrator_ema.m \
 protocolxmldir = ${HOME}/.cnbitk/$(PACKAGE_NAME)/xml
 protocolxml_DATA = xml/mobile_wheelchair_template.xml \
 				   ndf/CLASSIFIER.mat
+imagesdir = ${HOME}/.cnbitk/${PACKAGE_NAME}/images
+images_DATA = images/both_hands.png \
+				 images/both_feet.png \
+				 images/eye_open.png
 
 #protocolxml_DATA = xml/smrinc_template.xml \
 #				   xml/smr_mobile_template.xml \
