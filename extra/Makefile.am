@@ -5,6 +5,7 @@ protocolmat_DATA = 	ndf/integrator/ndf_integrator_ema.m \
 					ndf/integrator/ndf_integrator_dynamic.m \
 					ndf/integrator/ndf_integrator_forceprofile.m \
 					ndf/mobile/ndf_mobile.m \
+					ndf/mobile/ndf_mobile_positive.m \
 					ndf/mobile/ndf_mobile_include.m \
 					ndf/xml/ndf_xml_integrator_ema.m \
 					ndf/xml/ndf_xml_integrator_dynamic.m \
