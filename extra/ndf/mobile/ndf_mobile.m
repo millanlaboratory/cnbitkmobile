@@ -147,7 +147,30 @@ try
     end
     disp(['[ndf_mobile] - Control type set as ' control.type])
     cl_updatelog(loop.cl, sprintf('control=%s', control.type));
-    
+   
+	% Retrieve feedback type
+    feedback.typeid	  = 0;   % 0 - real; 1 - positive integration
+    feedback.type = cl_retrieveconfig(loop.cl, 'feedback', 'type');
+    if isempty(feedback.type)
+        disp('[ndf_mobile] Cannot retrieve the feedback type from nameserver. Using the default one: real')
+		feedback.type = 'real';
+    end
+    switch(feedback.type)
+        case 'real'
+            feedback.typeid = 0;
+            disp('[ndf_mobile] - Feedback type: real.');
+        case 'positive'
+            feedback.typeid = 1;
+            disp('[ndf_mobile] - Feedback type: positive integration.');
+        case 'max'
+            feedback.typeid = 2;
+            disp('[ndf_mobile] - Feedback type: positive maximum.');
+        otherwise
+            disp(['[ndf_mobile] - Unknown feedback type: ' feedback.type '. Exit']);
+            exit;
+    end
+	
+
     % Updating log file with thresholds
     for t = 0:user.nTasks-1
         cl_updatelog(loop.cl, ['th_' num2str(user.tasklabel{t+1}) '=' num2str(user.thresholds(t+1))]);
@@ -201,7 +224,10 @@ try
     
     
     integrator.dt = ndf.conf.samples/ndf.conf.sf;
-    
+    integrator.sprobs = (1./user.nTasks)*ones(user.nTasks, 1);
+ 
+	cueId = -1;
+	ptskprob = 1./user.nTasks;
 	while(true)
 		% Read NDF frame from pipe
 		loop.jump.toc = ndf_toc(loop.jump.tic);
@@ -220,64 +246,87 @@ try
         
         % Classify current eeg frame
         user.bci.support = eegc3_smr_classify(user.bci.analysis, buffer.eeg, user.bci.support);
-        
+    
         % Integrate raw probabilities
-        integrator.cprobs = user.bci.support.rawprobs(1);
-        
-        switch(integrator.type)
-            case 'ema'
-                useralpha = ndf_read_param(integrator.filepath, 'integrator', 'ema', 'alpha');
-                if(isempty(useralpha) == false)
-                    if(str2double(useralpha) ~= double(integrator.param.alpha))
-                        integrator.param.alpha = str2double(useralpha);
-                        disp(['[ndf_mobile] - DEBUG: Changed alpha parameter for ema to: ' useralpha]);
-                    end
-                end
-                integrator.nprobs = ndf_integrator_ema(integrator.cprobs, integrator.nprobs, integrator.param.alpha, integrator.param.rejection);
-            case 'dynamic'
-                userphi = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'phi');
-                if(isempty(userphi) == false)
-                    if(str2double(userphi) ~= double(integrator.param.phi))
-                        integrator.param.phi = str2double(userphi);
-                        disp(['[ndf_mobile] - DEBUG: Changed phi parameter for dynamic to: ' userphi]);
-                    end
-                end
-                userchi = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'chi');
-                if(isempty(userchi) == false)
-                    if(str2double(userchi) ~= double(integrator.param.chi))
-                        integrator.param.chi = str2double(userchi);
-                        disp(['[ndf_mobile] - DEBUG: Changed chi parameter for dynamic to: ' userchi]);
-                    end
-                end
-                userinc = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'inc');
-                if(isempty(userinc) == false)
-                    if(str2double(userinc) ~= double(integrator.param.inc))
-                        integrator.param.inc = str2double(userinc);
-                        disp(['[ndf_mobile] - DEBUG: Changed inc parameter for dynamic to: ' userinc]);
-                    end
-                end
-                usernrp = ndf_read_param(integrator.filepath, 'integrator', 'dynamic', 'nrp');
-                if(isempty(usernrp) == false)
-                    if(str2double(usernrp) ~= double(integrator.param.nrp))
-                        integrator.param.nrp = str2double(usernrp);
-                        disp(['[ndf_mobile] - DEBUG: Changed nrp parameter for dynamic to: ' usernrp]);
-                    end
-                end
-                integrator.nprobs = ndf_integrator_dynamic(integrator.cprobs, integrator.nprobs, ...
-                                                              integrator.param.phi, integrator.param.chi, ...
-                                                              integrator.param.inc, integrator.param.nrp, ...
-                                                              integrator.dt);
+		integrator.cprobs = user.bci.support.rawprobs(1);
+		
+		% Positive feedback
+		if(feedback.typeid == 1)
+			integration_enabled = true;
+			if(cueId > 0)
+				tskprob = user.bci.support.rawprobs(cueId);
+				otherId = setdiff(find(cellfun(@(x) ~isempty(x), user.tasklabel, 'UniformOutput', 1)), cueId);
+				
+				integration_enabled = true;
+				for t = 1:length(otherId)
+					if(tskprob > user.bci.support.rawprobs(otherId(t)))
+						integration_enabled = integration_enabled & true;
+					else
+						integration_enabled = false;
+					end
+
+				end
+
+				if integration_enabled == false
+					integrator.cprobs = integrator.nprobs;
+				end
+			end
+			%if(length(user.bci.support.rawprobs) == 2)
+			%	disp(['Task 1: ' num2str(user.bci.support.rawprobs(1), '%5.3f') ' - Task 2: ' num2str(user.bci.support.rawprobs(2), '%5.3f') ' - integrator: ' num2str(integration_enabled)]);
+			%	disp(['        ' num2str(integrator.nprobs, '%5.3f') ' -         ' num2str(1-integrator.nprobs, '%5.3f') ]);
+			%end
+		end
+	
+
+		if strcmpi(integrator.type, 'ema')
+			useralpha = ndf_read_param(integrator.filepath, 'integrator', 'ema', 'alpha');
+        	if(isempty(useralpha) == false)
+        	    if(str2double(useralpha) ~= double(integrator.param.alpha))
+        	        integrator.param.alpha = str2double(useralpha);
+        	        disp(['[ndf_mobile] - DEBUG: Changed alpha parameter for ema to: ' useralpha]);
+        	    end
+        	end
+        	integrator.nprobs = ndf_integrator_ema(integrator.cprobs, integrator.nprobs, integrator.param.alpha, integrator.param.rejection);
         end
+
+        integrator.sprobs = [integrator.nprobs 1-integrator.nprobs];
+		
+		if(feedback.typeid == 2)
+			if(cueId > 0)
+
+				ctskprob = integrator.sprobs(cueId);
+				ctskprob = max(ctskprob, ptskprob);
+				otherId = setdiff(find(cellfun(@(x) ~isempty(x), user.tasklabel, 'UniformOutput', 1)), cueId);
+				
+				integrator.sprobs(cueId) = ctskprob;
+				for t = 1:length(otherId)
+					integrator.sprobs(otherId(t)) = (1.0-ctskprob)./length(otherId);
+				end
+
+				ptskprob = ctskprob;
+			end
+			%disp(['Task 1: ' num2str(integrator.nprobs, '%5.3f') ' - Task 2: ' num2str(1-integrator.nprobs, '%5.3f')]);
+			%disp(['        ' num2str(integrator.sprobs(1), '%5.3f') ' -         ' num2str(integrator.sprobs(2), '%5.3f') ' - sum: ' num2str(sum(integrator.sprobs), '%5.3f')]);
+		end
+
         
 		% Handle async TOBI iD communication
         if(tid_isattached(loop.iD) == true)
             while(tid_getmessage(loop.iD, loop.sDi) == true)
                 id_event = idmessage_getevent(loop.mDi);
                 
-                if(id_event == 781)
+				if(id_event == 781)
                     integrator.nprobs = 0.5;
+					ptskprob = 1./user.nTasks;
 					printf('[ndf_mobile] Resetting NDF=%d/iD=%d\n', ndf.frame.index, idmessage_getbidx(loop.mDi));
-                end
+				else
+					
+					taskId = find(cellfun(@(x) x == id_event, user.tasklabel, 'UniformOutput', 1));
+					if(isempty(taskId) == 0)
+						cueId = taskId;
+					end
+				end
+				
             end
         else
 			tid_attach(loop.iD, loop.cfg.ndf.id);
@@ -293,8 +342,7 @@ try
                     disp('[ndf_mobile] Killing MATLAB')
                     exit;
                 end
-                integrator.sprob = [integrator.nprobs 1-integrator.nprobs];
-				icmessage_setvalue(loop.mC, loop.cfg.classifier.id, num2str(user.tasklabel{t}), integrator.sprob(taskloc));
+				icmessage_setvalue(loop.mC, loop.cfg.classifier.id, num2str(user.tasklabel{t}), integrator.sprobs(taskloc));
 			end
 			tic_setmessage(loop.iC, loop.sC, ndf.frame.index);
 		else
@@ -304,7 +352,7 @@ try
         % Handle sync TOBI iC communication to mobile
         if(control.continuous == true)
             if(tic_isattached(loop.mobile.iC) == true)
-                icmessage_setvalue(loop.mobile.mC, loop.cfg.classifier.id, num2str(loop.cfg.ndf.mobile.label), integrator.nprobs);
+                icmessage_setvalue(loop.mobile.mC, loop.cfg.classifier.id, num2str(loop.cfg.ndf.mobile.label), integrator.sprobs(1));
                 tic_setmessage(loop.mobile.iC, loop.mobile.sC, ndf.frame.index);
             else
                 tic_attach(loop.mobile.iC, loop.cfg.ndf.mobile.ic);
