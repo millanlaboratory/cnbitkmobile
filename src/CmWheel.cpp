@@ -48,9 +48,11 @@ CmWheel::CmWheel(float radius, float arc, float thick) {
 	this->text_ = new cnbi::draw::String(" ", 0.1f, dtk_white);
 	this->text_->SetFont(this->font_);
 
-	// Image
-	this->img_  = new cnbi::draw::Image(0.5f, 0.5f*0.6f);
-	this->img_->Move(0.0f, -0.3f);
+	// Images
+	this->imgl_  = new cnbi::draw::Image(0.5f, 0.5f*0.6f);
+	this->imgl_->Move(0.0f, -0.3f);
+	this->imgr_  = new cnbi::draw::Image(0.5f, 0.5f*0.6f);
+	this->imgr_->Move(0.0f, -0.3f);
 	
 	this->Add("ring", this->rng_);
 	this->Add("mrkm", this->mrkm_);
@@ -61,19 +63,22 @@ CmWheel::CmWheel(float radius, float arc, float thick) {
 	this->Add("fdb",  this->fdb_);
 	this->Add("mrkf", this->mrkf_);
 	this->Add("text", this->text_);
-	this->Add("image", this->img_);
+	this->Add("imgl", this->imgl_);
+	this->Add("imgr", this->imgr_);
 
 	this->RaiseTop("fdb");
 	this->RaiseTop("mrkf");
 	this->RaiseTop("mrkm");
 	this->RaiseTop("mrkl");
 	this->RaiseTop("mrkr");
-	this->LowerBottom("image");
+	this->LowerBottom("imgl");
+	this->LowerBottom("imgr");
 
 	this->cue_->Hide();
 	this->fix_->Hide();
 	this->text_->Hide();
-	this->img_->Hide();
+	this->imgl_->Hide();
+	this->imgr_->Hide();
 
 
 	// Events
@@ -94,7 +99,8 @@ CmWheel::~CmWheel(void) {
 	this->Remove("fdb");
 	this->Remove("mrkf");
 	this->Remove("text");
-	this->Remove("image");
+	this->Remove("imgl");
+	this->Remove("imgr");
 
 	delete this->rng_;
 	delete this->mrkm_;
@@ -107,6 +113,9 @@ CmWheel::~CmWheel(void) {
 	delete this->text_;
 	delete this->font_;
 	delete this->events_;
+	delete this->imgl_;
+	delete this->imgr_;
+
 
 }
 
@@ -118,10 +127,12 @@ void CmWheel::SetImage(unsigned int taskId, std::string path) {
 	message = "Assigned image " + path;
 	switch(taskId) {
 		case cnbi::mobile::Task::Left:
+			this->imgl_->Set(path);
 			message += " to cue left";
 			CcLogConfigS(message);
 			break;
 		case cnbi::mobile::Task::Right:
+			this->imgr_->Set(path);
 			message += " to cue right";
 			CcLogConfigS(message);
 			break;
@@ -194,7 +205,8 @@ bool CmWheel::GetThreshold(unsigned int taskId, float* threshold) {
 
 void CmWheel::ShowFixation(void) {
 	this->cue_->Hide();
-	this->img_->Hide();
+	this->imgl_->Hide();
+	this->imgr_->Hide();
 	this->text_->Hide();
 	this->fix_->Show();
 }
@@ -222,21 +234,37 @@ void CmWheel::ShowCue(unsigned int taskId) {
 
 void CmWheel::ShowImage(unsigned int taskId) {
 
-
-	auto it = this->map_images_.find(taskId);
-
-	if (it != this->map_images_.end()) {
-		
-		if(this->img_->Set(it->second))
-			this->img_->Show();
+	switch(taskId) {
+		case cnbi::mobile::Task::Left:
+			this->imgl_->Show();
+			this->imgr_->Hide();
+			break;
+		case cnbi::mobile::Task::Right:
+			this->imgl_->Hide();
+			this->imgr_->Show();
+			break;
+		default:
+			this->imgl_->Hide();
+			this->imgr_->Hide();
+			break;
 	}
+
+
+	//auto it = this->map_images_.find(taskId);
+
+	//if (it != this->map_images_.end()) {
+	//	
+	//	if(this->img_->Set(it->second))
+	//		this->img_->Show();
+	//}
 }
 
 void CmWheel::ShowText(std::string text, float x, float y) {
 
 	this->fix_->Hide();
 	this->cue_->Hide();
-	this->img_->Hide();
+	this->imgl_->Hide();
+	this->imgr_->Hide();
 	this->text_->SetText(text);
 	this->text_->Show();
 }
@@ -271,6 +299,8 @@ void CmWheel::Reset(void) {
 	this->fix_->Hide();
 	this->fdb_->SetColor(dtk_aluminium_dark);
 	this->Update(0.5f);
+	this->imgl_->Hide();
+	this->imgr_->Hide();
 	
 }
 

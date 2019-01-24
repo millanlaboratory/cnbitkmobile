@@ -64,7 +64,8 @@ class CmWheel : public cnbi::draw::Engine {
 		cnbi::draw::Rectangle*	mrkf_;
 		cnbi::draw::Font*		font_;
 		cnbi::draw::String*		text_;
-		cnbi::draw::Image*		img_;
+		cnbi::draw::Image*		imgl_;
+		cnbi::draw::Image*		imgr_;
 
 		float rng_size_;
 		float rng_thick_;
