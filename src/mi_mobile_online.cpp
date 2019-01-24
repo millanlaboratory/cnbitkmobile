@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
 	while(waitic == true) {
 		switch(ic->GetMessage(ics)) {
 			case ClTobiIc::Detached:
-				CcLogFatal("Ic detached");
+				CcLogFatal("Ic detached. Probably MATLAB crashed.");
 				goto shutdown;
 			case ClTobiIc::HasMessage:
 				waitic = false;
@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
 			while(true) { 
 				switch(ic->WaitMessage(ics)) {
 					case ClTobiIc::Detached:
-						CcLogFatal("Ic detached");
+						CcLogFatal("Ic detached. Probably MATLAB crashed.");
 						goto shutdown;
 						break;
 					case ClTobiIc::NoMessage:
