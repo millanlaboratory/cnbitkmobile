@@ -303,13 +303,13 @@ int main(int argc, char** argv) {
 		//idm.SetEvent(mievents->wait + mievents->off);
 		//id->SetMessage(ids);
 
-		// Continuous Feedback
-		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
-		idm.SetEvent(mievents->cfeedback);
-		id->SetMessage(ids, TCBlock::BlockIdxUnset, &fidx);
-
 		// Consume all messages
 		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage);
+		
+		// Continuous Feedback
+		CcTime::Sleep(1000.0f);  // <--- to avoid event in the same frame
+		idm.SetEvent(mievents->cfeedback);
+		id->SetMessage(ids, TCBlock::BlockIdxUnset, &fidx);
 
 		while(true) {
 	
