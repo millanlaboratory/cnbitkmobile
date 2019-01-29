@@ -93,6 +93,7 @@ int main(int argc, char** argv) {
 	CcTimeValue elapsed;
 	bool is_timeout;
 	unsigned int devevt;
+	unsigned int outdevevt;
 	
 	// Initialization ClLoop
 	CcCore::OpenLogger(protocol);
@@ -307,12 +308,44 @@ int main(int argc, char** argv) {
 		while(ic->WaitMessage(ics) == ClTobiIc::HasMessage);
 		
 		// Continuous Feedback
-		CcTime::Sleep(1000.0f);  // <--- to avoid event in the same frame
+		//CcTime::Sleep(1000.0f);  // <--- to avoid event in the same frame
 		idm.SetEvent(mievents->cfeedback);
 		id->SetMessage(ids, TCBlock::BlockIdxUnset, &fidx);
-
+		
+		
 		while(true) {
 	
+
+			// Wait for Ic message
+			while(true) { 
+				switch(ic->WaitMessage(ics)) {
+					case ClTobiIc::Detached:
+						CcLogFatal("Ic detached. Probably MATLAB crashed.");
+						goto shutdown;
+						break;
+					case ClTobiIc::NoMessage:
+						continue;
+						break;
+				}
+				if(icm.GetBlockIdx() > fidx) {
+					CcLogDebugS("Sync iD/iC : " << fidx << "/" << icm.GetBlockIdx());
+					break;
+				}
+			}
+			// Update probability
+			probs->Update(icc);
+			//printf("Prob: [%3.2f], Block: %d, ResetId: %d \n", probs->Get(1), icm.GetBlockIdx(), fidx);
+			hitclass = feedback->Update(probs->Get(1));
+			if( hitclass != -1) {
+				break;
+			}
+
+			// Update dynamically thresholds if changed
+			mi_mobile_update_threshold(taskset, feedback);
+
+			// Update dynamically refractory period
+			mi_mobile_update_timing("refractory", &timings->refractory);
+			
 			// Check for device events
 			if(idd->GetMessage(idds) == true) {
 				devevt = iddm.GetEvent();
@@ -337,40 +370,11 @@ int main(int argc, char** argv) {
 			} else if(devevt == devevents->start) {
 				feedback->ShowText("");
 			}
-
-			// Wait for Ic message
-			while(true) { 
-				switch(ic->WaitMessage(ics)) {
-					case ClTobiIc::Detached:
-						CcLogFatal("Ic detached. Probably MATLAB crashed.");
-						goto shutdown;
-						break;
-					case ClTobiIc::NoMessage:
-						continue;
-						break;
-				}
-				if(icm.GetBlockIdx() > fidx) {
-					CcLogDebugS("Sync iD/iC : " << fidx << "/" << icm.GetBlockIdx());
-					break;
-				}
-			}
-			// Update probability
-			probs->Update(icc);
-
-			hitclass = feedback->Update(probs->Get(1));
-			if( hitclass != -1) {
-				break;
-			}
-
-			// Update dynamically thresholds if changed
-			mi_mobile_update_threshold(taskset, feedback);
-
-			// Update dynamically refractory period
-			mi_mobile_update_timing("refractory", &timings->refractory);
 		
 		}
 		idm.SetEvent(mievents->cfeedback + mievents->off);
 		id->SetMessage(ids);
+		//CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 
 		CcLogInfoS("Threshold reached for class "<< taskset->GetTaskEx(hitclass)->gdf);
 		feedback->Hard(hitclass);
@@ -380,35 +384,39 @@ int main(int argc, char** argv) {
 		id->SetMessage(ids);
 		CcLogInfoS("Target hit");
 		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+		idm.SetEvent(mievents->hit + mievents->off);
+		id->SetMessage(ids);
 		
 		// Device
 		switch(taskset->GetTaskEx(hitclass)->id) {
 			case 0:
-				idm.SetEvent(devevents->right);
+				outdevevt = devevents->right;
 				break;
 			case 1:
-				idm.SetEvent(devevents->left);
+				outdevevt = devevents->left;
 				break;
 			case 2:
-				idm.SetEvent(devevents->forward);
+				outdevevt = devevents->forward;
 				break;
 			case 3:
-				idm.SetEvent(devevents->backward);
+				outdevevt = devevents->backward;
 				break;
 			default:
 				CcLogWarningS("Unkown class id to be associated "
 							  "to device command: "<<taskset->GetTaskEx(hitclass)->id);
 				break;
 		}
+		idm.SetEvent(outdevevt);
 		id->SetMessage(ids);
 		CcLogInfoS("TiD event for device ("<< taskset->GetTaskEx(hitclass)->gdf <<")");
+		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
+		idm.SetEvent(outdevevt + mievents->off);
+		id->SetMessage(ids);
 
 		// Close boom
 		CcTime::Sleep(timings->refractory);				// Notice: refractory period instead boom
 
-		CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
-		idm.SetEvent(mievents->hit + mievents->off);
-		id->SetMessage(ids);
+		//CcTime::Sleep(100.0f);  // <--- to avoid event in the same frame
 
 		// Reset feedback
 		feedback->Reset();
