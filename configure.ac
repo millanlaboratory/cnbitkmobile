@@ -82,6 +82,6 @@ AC_SUBST([REVISION],[lib_revision])
 AC_SUBST([AGE],[lib_age])
 AC_SUBST(AM_LDFLAGS)
 
-AC_CONFIG_FILES([Makefile src/Makefile extra/Makefile gui/Makefile python/Feedback/Makefile src/cnbimobile.pc])
+AC_CONFIG_FILES([Makefile src/Makefile extra/Makefile launcher/Makefile gui/Makefile python/Feedback/Makefile src/cnbimobile.pc])
 
 AC_OUTPUT

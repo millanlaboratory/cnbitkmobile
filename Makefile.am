@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 SUBDIRS = src/ \
 		  extra/ \
+		  launcher/ \
 	  	  gui/ \
 	  	  python/Feedback/
 
